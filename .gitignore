@@ -1,0 +1,38 @@
+# Python and Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+
+# Environment Variables
+.env
+
+# Database
+*.db
+*.sqlite3
+backend/chat_history.db
+
+# Vector Database (ChromaDB)
+chroma_db/
+backend/chroma_db/
+
+# Uploaded Files
+uploads/
+backend/uploads/
+
+# OS specific files
+.DS_Store
+desktop.ini
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# React / Frontend (for Phase 2)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.env.local
