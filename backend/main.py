@@ -104,3 +104,8 @@ def get_chat_history(session_id: str, db: Session = Depends(get_db)):
         models.ChatMessage.session_id == session_id
     ).order_by(models.ChatMessage.created_at).all()
     return records
+
+if __name__ == "__main__":
+    import uvicorn
+    # This allows you to run the server simply by typing `python main.py`
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
