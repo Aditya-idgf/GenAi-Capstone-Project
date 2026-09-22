@@ -1,17 +1,36 @@
-export type ViewId = 'chat' | 'library' | 'collections' | 'history' | 'settings'
+import type { ApiSource } from './api'
 
+export type ViewId = 'chat' | 'library' | 'collections' | 'settings'
 export type ThemeId = 'dark' | 'light'
-
-export type ToolId =
-  | 'summarize'
-  | 'keypoints'
-  | 'compare'
-  | 'explain'
-  | 'translate'
-  | 'mindmap'
-
+export type ToolId = 'summarize' | 'keypoints' | 'compare' | 'explain' | 'translate' | 'mindmap'
 export type ExplainLevel = 'Simple' | 'Detailed' | 'Technical'
 
+// ── Live chat message ─────────────────────────────────────────────────────────
+export type ChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+  sources: ApiSource[]
+  isLoading?: boolean
+}
+
+// ── Project / Chat ────────────────────────────────────────────────────────────
+export type Project = {
+  id: number
+  name: string
+  description: string
+  created_at: string
+}
+
+export type ChatSession = {
+  id: string          // session_id UUID
+  title: string       // first user message truncated
+  project_id: number
+  created_at: string
+}
+
+// ── Source item (right rail) ──────────────────────────────────────────────────
 export type SourceItem = {
   id: string
   number: number
@@ -22,6 +41,7 @@ export type SourceItem = {
   excerpt: string
 }
 
+// ── Library ───────────────────────────────────────────────────────────────────
 export type DocumentItem = {
   id: string
   name: string
@@ -32,6 +52,7 @@ export type DocumentItem = {
   uploaded: string
 }
 
+// ── Collections ───────────────────────────────────────────────────────────────
 export type CollectionItem = {
   id: string
   name: string
@@ -39,14 +60,7 @@ export type CollectionItem = {
   description: string
 }
 
-export type HistoryItem = {
-  id: string
-  title: string
-  collection: string
-  time: string
-  sources: number
-}
-
+// ── Search ────────────────────────────────────────────────────────────────────
 export type SearchHit = {
   id: string
   kind: 'Document' | 'Collection' | 'Conversation'

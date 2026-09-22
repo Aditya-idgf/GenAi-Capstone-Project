@@ -1,9 +1,27 @@
 import { Bookmark, Copy, ThumbsDown, ThumbsUp } from 'lucide-react'
-import { PRINCIPLES } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
+import type { ChatMessage } from '../../types'
 
-export function AssistantResponse() {
+function LoadingDots() {
+  return (
+    <div className="a-card__loading">
+      <span />
+      <span />
+      <span />
+    </div>
+  )
+}
+
+export function AssistantResponse({ message }: { message: ChatMessage }) {
   const { setSelectedText } = useWorkspace()
+
+  if (message.isLoading) {
+    return (
+      <article className="a-card">
+        <LoadingDots />
+      </article>
+    )
+  }
 
   return (
     <article
@@ -13,46 +31,41 @@ export function AssistantResponse() {
         setSelectedText(text)
       }}
     >
-      <p className="a-card__lead">
-        Retrieval-Augmented Generation (RAG) combines the strengths of information retrieval
-        and generative models to produce accurate, contextually relevant responses grounded in
-        external knowledge sources. The key principles include:
-      </p>
-
-      <ol className="principles">
-        {PRINCIPLES.map((item) => (
-          <li key={item.n}>
-            <span>{item.n}</span>
-            <p>
-              <strong>{item.title}:</strong> {item.body}
-            </p>
-          </li>
+      {/* Render answer — preserve newlines */}
+      <div className="a-card__body">
+        {message.content.split('\n').map((line, i) => (
+          <p key={i} className="a-card__para">
+            {line || <br />}
+          </p>
         ))}
-      </ol>
-
-      <p className="a-card__close">
-        This approach helps reduce hallucinations and keeps the model outputs up-to-date with
-        external knowledge.
-      </p>
+      </div>
 
       <footer className="a-card__foot">
         <div className="a-card__meta">
-          <time>10:42 PM</time>
-          <span>•</span>
-          <span>4 sources</span>
+          <time>{message.timestamp}</time>
+          {message.sources.length > 0 && (
+            <>
+              <span>•</span>
+              <span>{message.sources.length} source{message.sources.length !== 1 ? 's' : ''}</span>
+            </>
+          )}
         </div>
         <div className="a-card__actions">
-          <button type="button" aria-label="Copy" onClick={() => navigator.clipboard.writeText(document.querySelector('.a-card')?.textContent ?? '')}>
-            <Copy size={16} strokeWidth={1.75} />
+          <button
+            type="button"
+            aria-label="Copy"
+            onClick={() => navigator.clipboard.writeText(message.content)}
+          >
+            <Copy size={15} strokeWidth={1.75} />
           </button>
           <button type="button" aria-label="Like">
-            <ThumbsUp size={16} strokeWidth={1.75} />
+            <ThumbsUp size={15} strokeWidth={1.75} />
           </button>
           <button type="button" aria-label="Dislike">
-            <ThumbsDown size={16} strokeWidth={1.75} />
+            <ThumbsDown size={15} strokeWidth={1.75} />
           </button>
           <button type="button" aria-label="Bookmark">
-            <Bookmark size={16} strokeWidth={1.75} />
+            <Bookmark size={15} strokeWidth={1.75} />
           </button>
         </div>
       </footer>

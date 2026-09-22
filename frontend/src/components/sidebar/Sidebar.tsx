@@ -1,8 +1,7 @@
-import { Brand } from './Brand'
-import { KnowledgeOverview } from './KnowledgeOverview'
+﻿import { Brand } from './Brand'
 import { Navigation } from './Navigation'
 import { ProfileCard } from './ProfileCard'
-import { UploadButton } from './UploadButton'
+import { ProjectList } from './ProjectList'
 import { useWorkspace } from '../../state/WorkspaceContext'
 
 export function Sidebar() {
@@ -20,10 +19,9 @@ export function Sidebar() {
       )}
       <aside className={`sidebar${sidebarOpen ? ' is-open' : ''}`}>
         <Brand />
-        <UploadButton />
+        <ProjectList />
         <Navigation />
         <div className="sidebar__foot">
-          <KnowledgeOverview />
           <ProfileCard />
         </div>
       </aside>

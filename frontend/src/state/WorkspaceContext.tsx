@@ -1,86 +1,143 @@
-import {
+﻿import {
   createContext,
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from 'react'
-import { COLLECTIONS, SOURCES } from '../data'
-import type { ExplainLevel, ThemeId, ToolId, ViewId } from '../types'
+import { v4 as uuidv4 } from 'uuid'
+import {
+  createProject,
+  deleteProject,
+  deleteSession,
+  fetchProjectStats,
+  fetchProjects,
+  fetchSessions,
+  renameProject,
+  sendQuery,
+  uploadDocument,
+  type ApiChatSession,
+  type ApiProject,
+  type ApiSource,
+  type KnowledgeStats,
+} from '../api'
+import type { ChatMessage, ExplainLevel, ThemeId, ToolId, ViewId } from '../types'
+
+export type ToastType = 'success' | 'error' | 'info'
+
+export interface ToastItem {
+  id: string
+  message: string
+  type: ToastType
+  duration?: number
+}
 
 type WorkspaceContextValue = {
   view: ViewId
-  setView: (view: ViewId) => void
+  setView: (v: ViewId) => void
   theme: ThemeId
   toggleTheme: () => void
   searchOpen: boolean
   setSearchOpen: (open: boolean) => void
-  collection: string
-  setCollection: (value: string) => void
-  sourceCount: number
-  setSourceCount: (value: number) => void
-  model: string
-  setModel: (value: string) => void
-  selectedSourceIds: string[]
-  toggleSource: (id: string) => void
-  selectedText: string
-  setSelectedText: (value: string) => void
-  activeTool: ToolId | null
-  openTool: (tool: ToolId) => void
-  closeTool: () => void
-  explainLevel: ExplainLevel
-  setExplainLevel: (level: ExplainLevel) => void
-  translateLang: string
-  setTranslateLang: (lang: string) => void
-  hintVisible: boolean
-  dismissHint: () => void
-  previewSourceId: string | null
-  setPreviewSourceId: (id: string | null) => void
-  conversationTitle: string
-  startNewChat: () => void
-  composer: string
-  setComposer: (value: string) => void
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
   railOpen: boolean
   setRailOpen: (open: boolean) => void
-  visibleTools: ToolId[]
+  projects: ApiProject[]
+  activeProjectId: number | null
+  setActiveProject: (id: number) => void
+  addProject: (name: string) => Promise<void>
+  renameProjectLocal: (id: number, name: string) => Promise<void>
+  removeProject: (id: number) => Promise<void>
+  sessions: Record<number, ApiChatSession[]>
+  loadSessions: (projectId: number) => Promise<void>
+  activeSessionId: string | null
+  openSession: (sess: ApiChatSession) => void
+  removeSession: (sessionId: string) => Promise<void>
+  messages: ChatMessage[]
+  isQuerying: boolean
+  sendMessage: (text: string) => Promise<void>
+  startNewChat: (projectId: number) => void
+  composer: string
+  setComposer: (v: string) => void
+  sourceCount: number
+  setSourceCount: (v: number) => void
+  model: string
+  setModel: (v: string) => void
+  uploadFile: (file: File) => Promise<void>
+  isUploading: boolean
+  uploadError: string | null
+  activeSources: ApiSource[]
+  selectedSourceIds: string[]
+  toggleSource: (id: string) => void
+  previewSourceId: string | null
+  setPreviewSourceId: (id: string | null) => void
+  stats: KnowledgeStats | null
+  refreshStats: () => void
+  activeTool: ToolId | null
+  openTool: (tool: ToolId) => void
+  closeTool: () => void
+  selectedText: string
+  setSelectedText: (v: string) => void
+  explainLevel: ExplainLevel
+  setExplainLevel: (l: ExplainLevel) => void
+  translateLang: string
+  setTranslateLang: (l: string) => void
+  hintVisible: boolean
+  dismissHint: () => void
+  collection: string
+  setCollection: (v: string) => void
+  toasts: ToastItem[]
+  showToast: (message: string, type?: ToastType, duration?: number) => void
+  removeToast: (id: string) => void
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null)
+
+function nowTime() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<ViewId>('chat')
   const [theme, setTheme] = useState<ThemeId>('dark')
   const [searchOpen, setSearchOpen] = useState(false)
-  const [collection, setCollection] = useState(COLLECTIONS[0].name)
-  const [sourceCount, setSourceCount] = useState(8)
-  const [model, setModel] = useState('Llama 3.1 8B')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [railOpen, setRailOpen] = useState(false)
+  const [projects, setProjects] = useState<ApiProject[]>([])
+  const [activeProjectId, setActiveProjectId] = useState<number | null>(null)
+  const [sessions, setSessions] = useState<Record<number, ApiChatSession[]>>({})
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [isQuerying, setIsQuerying] = useState(false)
+  const [composer, setComposer] = useState('')
+  const [collection, setCollection] = useState('default')
+  const [sourceCount, setSourceCount] = useState(4)
+  const [model, setModel] = useState('llama-3.1-8b-instant')
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
-  const [selectedText, setSelectedText] = useState('')
+  const [previewSourceId, setPreviewSourceId] = useState<string | null>(null)
+  const [stats, setStats] = useState<KnowledgeStats | null>(null)
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
+  const [selectedText, setSelectedText] = useState('')
   const [explainLevel, setExplainLevel] = useState<ExplainLevel>('Detailed')
   const [translateLang, setTranslateLang] = useState('Hindi')
   const [hintVisible, setHintVisible] = useState(true)
-  const [previewSourceId, setPreviewSourceId] = useState<string | null>(null)
-  const [conversationTitle, setConversationTitle] = useState('New Conversation')
-  const [composer, setComposer] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [railOpen, setRailOpen] = useState(false)
+  const [toasts, setToasts] = useState<ToastItem[]>([])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault()
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
         setSearchOpen(true)
       }
-      if (event.key === 'Escape') {
+      if (e.key === 'Escape') {
         setSearchOpen(false)
         setActiveTool(null)
         setPreviewSourceId(null)
@@ -90,84 +147,300 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const toggleTheme = useCallback(() => {
-    setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
+  useEffect(() => {
+    fetchProjects()
+      .then((ps) => {
+        setProjects(ps)
+        if (ps.length > 0 && activeProjectId === null) {
+          setActiveProjectId(ps[0].id)
+        }
+      })
+      .catch(() => {})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const refreshStats = useCallback(() => {
+    if (activeProjectId === null) return
+    fetchProjectStats(activeProjectId)
+      .then(setStats)
+      .catch(() => {})
+  }, [activeProjectId])
+
+  useEffect(() => {
+    refreshStats()
+  }, [refreshStats])
+
+  const activeSources: ApiSource[] = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant' && messages[i].sources.length > 0) {
+        return messages[i].sources
+      }
+    }
+    return []
+  })()
+
+  const addProject = useCallback(async (name: string) => {
+    const p = await createProject(name)
+    setProjects((prev) => [...prev, p])
+    setActiveProjectId(p.id)
+    setSessions((prev) => ({ ...prev, [p.id]: [] }))
+    setMessages([])
+    setActiveSessionId(null)
   }, [])
 
-  const toggleSource = useCallback((id: string) => {
-    setSelectedSourceIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    )
+  const renameProjectLocal = useCallback(async (id: number, name: string) => {
+    const updated = await renameProject(id, name)
+    setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)))
   }, [])
 
-  const visibleTools = useMemo<ToolId[]>(() => {
-    const count = selectedSourceIds.length
-    if (count === 1) {
-      return ['summarize', 'keypoints', 'explain', 'translate', 'mindmap']
-    }
-    if (count >= 2) {
-      return ['summarize', 'keypoints', 'compare', 'translate', 'mindmap']
-    }
-    return ['summarize', 'keypoints', 'compare', 'explain', 'translate', 'mindmap']
-  }, [selectedSourceIds.length])
+  const removeProject = useCallback(
+    async (id: number) => {
+      await deleteProject(id)
+      setProjects((prev) => prev.filter((p) => p.id !== id))
+      setSessions((prev) => {
+        const n = { ...prev }
+        delete n[id]
+        return n
+      })
+      if (activeProjectId === id) {
+        setActiveProjectId(null)
+        setActiveSessionId(null)
+        setMessages([])
+        setStats(null)
+      }
+    },
+    [activeProjectId],
+  )
 
-  const value: WorkspaceContextValue = {
-    view,
-    setView,
-    theme,
-    toggleTheme,
-    searchOpen,
-    setSearchOpen,
-    collection,
-    setCollection,
-    sourceCount,
-    setSourceCount,
-    model,
-    setModel,
-    selectedSourceIds,
-    toggleSource,
-    selectedText,
-    setSelectedText,
-    activeTool,
-    openTool: setActiveTool,
-    closeTool: () => setActiveTool(null),
-    explainLevel,
-    setExplainLevel,
-    translateLang,
-    setTranslateLang,
-    hintVisible,
-    dismissHint: () => setHintVisible(false),
-    previewSourceId,
-    setPreviewSourceId,
-    conversationTitle,
-    startNewChat: () => {
-      setConversationTitle('New Conversation')
-      setView('chat')
+  const setActiveProject = useCallback(
+    (id: number) => {
+      if (id === activeProjectId) return
+      setActiveProjectId(id)
+      setActiveSessionId(null)
+      setMessages([])
       setComposer('')
       setSelectedSourceIds([])
       setSelectedText('')
       setActiveTool(null)
+      setView('chat')
     },
-    composer,
-    setComposer,
-    sidebarOpen,
-    setSidebarOpen,
-    railOpen,
-    setRailOpen,
-    visibleTools,
+    [activeProjectId],
+  )
+
+  const loadSessions = useCallback(async (projectId: number) => {
+    try {
+      const list = await fetchSessions(projectId)
+      setSessions((prev) => ({ ...prev, [projectId]: list }))
+    } catch {}
+  }, [])
+
+  const openSession = useCallback((sess: ApiChatSession) => {
+    setActiveSessionId(sess.id)
+    setMessages([])
+    setComposer('')
+    setSelectedSourceIds([])
+    setActiveTool(null)
+    setView('chat')
+  }, [])
+
+  const removeSession = useCallback(
+    async (sessionId: string) => {
+      // Always remove from local state first so UI updates immediately
+      setSessions((prev) => {
+        const updated = { ...prev }
+        for (const pid in updated) {
+          updated[Number(pid)] = updated[Number(pid)].filter((s) => s.id !== sessionId)
+        }
+        return updated
+      })
+      if (activeSessionId === sessionId) {
+        setActiveSessionId(null)
+        setMessages([])
+      }
+      // Fire-and-forget the API call; ignore 404 for optimistic sessions
+      try {
+        await deleteSession(sessionId)
+      } catch {}
+    },
+    [activeSessionId],
+  )
+
+  const showToast = useCallback((message: string, type: ToastType = 'success', duration = 4000) => {
+    const id = uuidv4()
+    setToasts((prev) => [...prev, { id, message, type, duration }])
+  }, [])
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
+
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (activeProjectId === null) return
+      setIsUploading(true)
+      setUploadError(null)
+      try {
+        const doc = await uploadDocument(activeProjectId, file)
+        refreshStats()
+        showToast(`Uploaded ${doc.filename} successfully`, 'success')
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Upload failed'
+        setUploadError(errorMsg)
+        showToast(errorMsg, 'error')
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [activeProjectId, refreshStats, showToast],
+  )
+
+  const startNewChat = useCallback((projectId: number) => {
+    const newId = uuidv4()
+    setActiveProjectId(projectId)
+    setActiveSessionId(newId)
+    setMessages([])
+    setComposer('')
+    setSelectedSourceIds([])
+    setSelectedText('')
+    setActiveTool(null)
+    setView('chat')
+    const optimistic: ApiChatSession = {
+      id: newId,
+      project_id: projectId,
+      title: 'New Chat',
+      created_at: new Date().toISOString(),
+    }
+    setSessions((prev) => ({
+      ...prev,
+      [projectId]: [optimistic, ...(prev[projectId] ?? [])],
+    }))
+  }, [])
+
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim() || isQuerying) return
+      if (activeProjectId === null) return
+
+      let currentSessionId = activeSessionId
+      if (!currentSessionId) {
+        currentSessionId = uuidv4()
+        setActiveSessionId(currentSessionId)
+        const optimistic: ApiChatSession = {
+          id: currentSessionId,
+          project_id: activeProjectId,
+          title: 'New Chat',
+          created_at: new Date().toISOString(),
+        }
+        setSessions((prev) => ({
+          ...prev,
+          [activeProjectId]: [optimistic, ...(prev[activeProjectId] ?? [])],
+        }))
+      }
+
+      const userMsg: ChatMessage = {
+        id: uuidv4(), role: 'user',
+        content: text.trim(), timestamp: nowTime(), sources: [],
+      }
+      const loadingMsg: ChatMessage = {
+        id: uuidv4(), role: 'assistant',
+        content: '', timestamp: nowTime(), sources: [], isLoading: true,
+      }
+      setMessages((prev) => [...prev, userMsg, loadingMsg])
+      setIsQuerying(true)
+
+      try {
+        const res = await sendQuery({
+          session_id: currentSessionId,
+          project_id: activeProjectId,
+          question: text.trim(),
+          source_count: sourceCount,
+        })
+
+        const assistantMsg: ChatMessage = {
+          id: uuidv4(), role: 'assistant',
+          content: res.answer, timestamp: nowTime(), sources: res.sources,
+        }
+        setMessages((prev) => [...prev.slice(0, -1), assistantMsg])
+
+        setSessions((prev) => {
+          const list = prev[activeProjectId] ?? []
+          return {
+            ...prev,
+            [activeProjectId]: list.map((s) =>
+              s.id === currentSessionId && s.title === 'New Chat'
+                ? { ...s, title: text.trim().slice(0, 60) }
+                : s,
+            ),
+          }
+        })
+
+        refreshStats()
+      } catch (err) {
+        const errMsg: ChatMessage = {
+          id: uuidv4(), role: 'assistant',
+          content: `Error: ${err instanceof Error ? err.message : 'Something went wrong'}`,
+          timestamp: nowTime(), sources: [],
+        }
+        setMessages((prev) => [...prev.slice(0, -1), errMsg])
+      } finally {
+        setIsQuerying(false)
+      }
+    },
+    [isQuerying, activeProjectId, activeSessionId, sourceCount, refreshStats],
+  )
+
+  const toggleSource = useCallback((id: string) => {
+    setSelectedSourceIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }, [])
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+  }, [])
+
+  const value: WorkspaceContextValue = {
+    view, setView,
+    theme, toggleTheme,
+    searchOpen, setSearchOpen,
+    sidebarOpen, setSidebarOpen,
+    railOpen, setRailOpen,
+    projects, activeProjectId,
+    setActiveProject, addProject, renameProjectLocal, removeProject,
+    sessions, loadSessions,
+    activeSessionId, openSession, removeSession,
+    messages, isQuerying,
+    sendMessage, startNewChat,
+    composer, setComposer,
+    collection, setCollection,
+    sourceCount, setSourceCount,
+    model, setModel,
+    uploadFile, isUploading, uploadError,
+    activeSources,
+    selectedSourceIds, toggleSource,
+    previewSourceId, setPreviewSourceId,
+    stats, refreshStats,
+    activeTool,
+    openTool: setActiveTool,
+    closeTool: () => setActiveTool(null),
+    selectedText, setSelectedText,
+    explainLevel, setExplainLevel,
+    translateLang, setTranslateLang,
+    hintVisible,
+    dismissHint: () => setHintVisible(false),
+    toasts, showToast, removeToast,
   }
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>
 }
 
 export function useWorkspace() {
-  const context = useContext(WorkspaceContext)
-  if (!context) {
-    throw new Error('useWorkspace must be used inside WorkspaceProvider')
-  }
-  return context
+  const ctx = useContext(WorkspaceContext)
+  if (!ctx) throw new Error('useWorkspace must be used inside WorkspaceProvider')
+  return ctx
 }
 
 export function selectedSources(ids: string[]) {
-  return SOURCES.filter((source) => ids.includes(source.id))
+  return ids.map((id, i) => ({
+    id, number: i + 1, title: id, page: 0, chunk: 0, iconTone: 'gray' as const, excerpt: '',
+  }))
 }

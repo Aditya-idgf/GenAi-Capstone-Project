@@ -57,7 +57,7 @@ export function SearchModal() {
                   onClick={() => {
                     if (item.kind === 'Document') setView('library')
                     else if (item.kind === 'Collection') setView('collections')
-                    else setView('history')
+                    else setView('chat')
                     setSearchOpen(false)
                   }}
                 >

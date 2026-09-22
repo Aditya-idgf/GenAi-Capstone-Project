@@ -1,7 +1,7 @@
 import type {
   CollectionItem,
   DocumentItem,
-  HistoryItem,
+
   SearchHit,
   SourceItem,
 } from './types'
@@ -141,7 +141,7 @@ export const COLLECTIONS: CollectionItem[] = [
   },
 ]
 
-export const HISTORY: HistoryItem[] = [
+export const HISTORY = [
   {
     id: 'h1',
     title: 'Key principles behind Retrieval-Augmented Generation',
@@ -186,7 +186,7 @@ export const SEARCH_INDEX: SearchHit[] = [
   })),
 ]
 
-export const MODELS = ['Llama 3.1 8B', 'Gemma 2 9B', 'Mistral 7B']
+export const MODELS = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b']
 
 export const SOURCE_COUNTS = [4, 6, 8, 10, 12, 16]
 

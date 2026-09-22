@@ -1,22 +1,21 @@
 import { X } from 'lucide-react'
-import { LANGUAGES, PRINCIPLES, SOURCES } from '../../data'
-import { selectedSources, useWorkspace } from '../../state/WorkspaceContext'
+import { LANGUAGES, PRINCIPLES } from '../../data'
+import { useWorkspace } from '../../state/WorkspaceContext'
 import type { ToolId } from '../../types'
 
 const TITLES: Record<ToolId, string> = {
   summarize: 'Summarize',
   keypoints: 'Key Points',
-  compare: 'Compare Sources',
-  explain: 'Explain',
+  compare:   'Compare Sources',
+  explain:   'Explain',
   translate: 'Translate',
-  mindmap: 'Mind Map',
+  mindmap:   'Mind Map',
 }
 
-function workingText(selectedText: string, ids: string[]) {
+function workingText(selectedText: string, excerpts: string[]) {
   if (selectedText) return selectedText
-  const picked = selectedSources(ids)
-  if (picked.length) return picked.map((item) => item.excerpt).join(' ')
-  return PRINCIPLES.map((item) => `${item.title}: ${item.body}`).join(' ')
+  if (excerpts.length) return excerpts.join(' ')
+  return PRINCIPLES.map((p) => `${p.title}: ${p.body}`).join(' ')
 }
 
 function Summary({ text }: { text: string }) {
@@ -36,7 +35,7 @@ function KeyPoints() {
         <li key={item.n}>
           <span>{item.n}</span>
           <p>
-            <strong>{item.title}</strong>
+            <strong>{item.title}: </strong>
             {item.body}
           </p>
         </li>
@@ -45,18 +44,17 @@ function KeyPoints() {
   )
 }
 
-function Compare({ ids }: { ids: string[] }) {
-  const items = selectedSources(ids)
-  const pair = (items.length >= 2 ? items : SOURCES).slice(0, 2)
+function Compare({ excerpts }: { excerpts: string[] }) {
+  const pair = excerpts.slice(0, 2)
+  if (pair.length < 2) {
+    return <p>Select at least two sources to compare.</p>
+  }
   return (
     <div className="compare">
-      {pair.map((item) => (
-        <article key={item.id}>
-          <h4>{item.title}</h4>
-          <p className="muted">
-            Page {item.page} • Chunk {item.chunk}
-          </p>
-          <p>{item.excerpt}</p>
+      {pair.map((excerpt, i) => (
+        <article key={i}>
+          <h4>Source {i + 1}</h4>
+          <p>{excerpt}</p>
         </article>
       ))}
     </div>
@@ -69,11 +67,10 @@ function Explain() {
     Simple:
       'RAG looks up the right pages in your files, then writes an answer using those pages so it is less likely to invent facts.',
     Detailed:
-      'The retriever scores chunks against the question, the highest-ranked passages are appended to the prompt, and the generator must stay consistent with that evidence. Attribution then points each claim back to a page and chunk.',
+      'The retriever scores chunks against the question, the highest-ranked passages are appended to the prompt, and the generator must stay consistent with that evidence.',
     Technical:
-      'Query and document encoders produce dense vectors; top-k ANN hits become context tokens. Generation is a conditional LM P(y | q, C). Citation maps tokens or sentences onto chunk IDs for inspection.',
+      'Query and document encoders produce dense vectors; top-k ANN hits become context tokens. Generation is a conditional LM P(y | q, C).',
   }
-
   return (
     <div>
       <div className="seg">
@@ -98,17 +95,16 @@ function Translate({ text }: { text: string }) {
   const samples: Record<string, string> = {
     English: text,
     Hindi:
-      'RAG पहले प्रासंगिक दस्तावेज़ अंश खोजता है, फिर उसी साक्ष्य के आधार पर उत्तर लिखता है, जिससे दावे स्रोतों से जुड़े रहते हैं।',
+      'RAG पहले प्रासंगिक दस्तावेज़ अंश खोजता है, फिर उसी साक्ष्य के आधार पर उत्तर लिखता है।',
     Marathi:
-      'RAG आधी संबंधित दस्तऐवज शोधते आणि नंतर त्या पुराव्यावर आधारित उत्तर तयार करते, त्यामुळे माहिती स्रोतांशी जोडलेली राहते.',
+      'RAG आधी संबंधित दस्तऐवज शोधते आणि नंतर त्या पुराव्यावर आधारित उत्तर तयार करते.',
     Spanish:
-      'RAG recupera pasajes relevantes y genera la respuesta a partir de esa evidencia, manteniendo cada afirmación atribuible a una fuente.',
+      'RAG recupera pasajes relevantes y genera la respuesta a partir de esa evidencia.',
     French:
-      'RAG récupère d’abord les passages utiles, puis rédige la réponse à partir de ces preuves afin de limiter les hallucinations.',
+      "RAG récupère d'abord les passages utiles, puis rédige la réponse à partir de ces preuves.",
     German:
-      'RAG sucht zuerst passende Textstellen und erzeugt die Antwort aus diesem Belegkontext, damit Aussagen nachprüfbar bleiben.',
+      'RAG sucht zuerst passende Textstellen und erzeugt die Antwort aus diesem Belegkontext.',
   }
-
   return (
     <div>
       <label className="field">
@@ -144,9 +140,14 @@ function MindMap() {
 }
 
 export function ToolWorkspace() {
-  const { activeTool, closeTool, selectedText, selectedSourceIds } = useWorkspace()
+  const { activeTool, closeTool, selectedText, selectedSourceIds, activeSources } = useWorkspace()
   if (!activeTool) return null
-  const text = workingText(selectedText, selectedSourceIds)
+
+  const selectedExcerpts = activeSources
+    .filter((s) => selectedSourceIds.includes(`${s.title}-${s.page}-${s.chunk}`))
+    .map((s) => s.excerpt)
+
+  const text = workingText(selectedText, selectedExcerpts)
 
   return (
     <div className="sheet">
@@ -169,10 +170,10 @@ export function ToolWorkspace() {
       <div className="sheet__body">
         {activeTool === 'summarize' && <Summary text={text} />}
         {activeTool === 'keypoints' && <KeyPoints />}
-        {activeTool === 'compare' && <Compare ids={selectedSourceIds} />}
-        {activeTool === 'explain' && <Explain />}
+        {activeTool === 'compare'   && <Compare excerpts={selectedExcerpts} />}
+        {activeTool === 'explain'   && <Explain />}
         {activeTool === 'translate' && <Translate text={text} />}
-        {activeTool === 'mindmap' && <MindMap />}
+        {activeTool === 'mindmap'   && <MindMap />}
       </div>
     </div>
   )

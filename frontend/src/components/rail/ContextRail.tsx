@@ -1,3 +1,5 @@
+﻿import { KnowledgeOverview } from '../sidebar/KnowledgeOverview'
+import { SourcePreview } from './SourcePreview'
 import { SourcesPanel } from './SourcesPanel'
 import { ToolHint } from './ToolHint'
 import { ToolsPanel } from './ToolsPanel'
@@ -18,8 +20,10 @@ export function ContextRail() {
       )}
       <aside className={`rail${railOpen ? ' is-open' : ''}`}>
         <SourcesPanel />
+        <KnowledgeOverview />
         <ToolsPanel />
         <ToolHint />
+        <SourcePreview />
       </aside>
     </>
   )

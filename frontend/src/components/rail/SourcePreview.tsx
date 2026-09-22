@@ -1,10 +1,15 @@
 import { X } from 'lucide-react'
-import { SOURCES } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
 
 export function SourcePreview() {
-  const { previewSourceId, setPreviewSourceId } = useWorkspace()
-  const source = SOURCES.find((item) => item.id === previewSourceId)
+  const { previewSourceId, setPreviewSourceId, activeSources } = useWorkspace()
+
+  if (!previewSourceId) return null
+
+  // Find matching source by composite id: "title-page-chunk"
+  const source = activeSources.find(
+    (s) => `${s.title}-${s.page}-${s.chunk}` === previewSourceId,
+  )
   if (!source) return null
 
   return (
@@ -17,7 +22,12 @@ export function SourcePreview() {
             Page {source.page} • Chunk {source.chunk}
           </p>
         </div>
-        <button className="icon-btn" type="button" onClick={() => setPreviewSourceId(null)}>
+        <button
+          className="icon-btn"
+          type="button"
+          onClick={() => setPreviewSourceId(null)}
+          aria-label="Close preview"
+        >
           <X size={16} strokeWidth={1.8} />
         </button>
       </header>

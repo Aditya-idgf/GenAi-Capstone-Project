@@ -1,32 +1,33 @@
-import { COLLECTIONS } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
 
 export function CollectionsView() {
-  const { collection, setCollection, setView } = useWorkspace()
+  const { projects, activeProjectId, setActiveProject, setView } = useWorkspace()
 
   return (
     <section className="page">
       <header className="page__head">
         <div>
           <p className="eyebrow">Collections</p>
-          <h1>Retrieval scope</h1>
+          <h1>Projects</h1>
         </div>
-        <p className="muted">Group documents to define what the retriever can see.</p>
+        <p className="muted">Each project has its own documents and retrieval scope.</p>
       </header>
+
+      {projects.length === 0 && (
+        <p className="muted">No projects yet. Create one from the sidebar.</p>
+      )}
+
       <div className="cards">
-        {COLLECTIONS.map((item) => (
+        {projects.map((p) => (
           <button
-            key={item.id}
-            className={`card-btn${collection === item.name ? ' is-active' : ''}`}
+            key={p.id}
+            className={`card-btn${activeProjectId === p.id ? ' is-active' : ''}`}
             type="button"
-            onClick={() => {
-              setCollection(item.name)
-              setView('chat')
-            }}
+            onClick={() => { setActiveProject(p.id); setView('chat') }}
           >
-            <h3>{item.name}</h3>
-            <p>{item.description}</p>
-            <strong>{item.documents} documents</strong>
+            <h3>{p.name}</h3>
+            <p>{p.description || 'No description.'}</p>
+            <strong>{p.document_count} document{p.document_count !== 1 ? 's' : ''}</strong>
           </button>
         ))}
       </div>

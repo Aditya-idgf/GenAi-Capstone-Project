@@ -32,19 +32,21 @@ export function ComposerSelect({ icon, title, subtitle, options, value, onChange
           <strong>{title}</strong>
           <em>{subtitle}</em>
         </span>
-        <ChevronDown size={14} strokeWidth={1.8} />
+        <ChevronDown
+          size={14}
+          strokeWidth={1.8}
+          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 160ms' }}
+        />
       </button>
       {open && (
-        <div className="menu c-select__menu">
+        /* opens UPWARD — bottom: 100% so it never clips below viewport */
+        <div className="menu c-select__menu c-select__menu--up">
           {options.map((option) => (
             <button
               key={option.value}
               type="button"
               className={option.value === value ? 'is-selected' : ''}
-              onClick={() => {
-                onChange(option.value)
-                setOpen(false)
-              }}
+              onClick={() => { onChange(option.value); setOpen(false) }}
             >
               {option.label}
             </button>

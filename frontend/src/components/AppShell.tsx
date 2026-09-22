@@ -1,11 +1,11 @@
-import { Conversation } from './chat/Conversation'
+﻿import { Conversation } from './chat/Conversation'
 import { MessageComposer } from './composer/MessageComposer'
 import { SearchModal } from './header/SearchModal'
 import { TopHeader } from './header/TopHeader'
 import { ContextRail } from './rail/ContextRail'
 import { Sidebar } from './sidebar/Sidebar'
+import { ToastContainer } from './ui/ToastContainer'
 import { CollectionsView } from './views/CollectionsView'
-import { HistoryView } from './views/HistoryView'
 import { LibraryView } from './views/LibraryView'
 import { SettingsView } from './views/SettingsView'
 import { useWorkspace } from '../state/WorkspaceContext'
@@ -25,15 +25,15 @@ export function AppShell() {
           </div>
         ) : (
           <div className="workspace__page">
-            {view === 'library' && <LibraryView />}
+            {view === 'library'     && <LibraryView />}
             {view === 'collections' && <CollectionsView />}
-            {view === 'history' && <HistoryView />}
-            {view === 'settings' && <SettingsView />}
+            {view === 'settings'    && <SettingsView />}
           </div>
         )}
       </main>
       <ContextRail />
       <SearchModal />
+      <ToastContainer />
     </div>
   )
 }
