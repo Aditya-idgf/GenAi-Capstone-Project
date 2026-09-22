@@ -188,6 +188,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     refreshStats()
   }, [refreshStats])
 
+  const showToast = useCallback((message: string, type: ToastType = 'success', duration = 4000) => {
+    const id = uuidv4()
+    setToasts((prev) => [...prev, { id, message, type, duration }])
+  }, [])
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
+
   const activeSources: ApiSource[] = (() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].role === 'assistant' && messages[i].sources.length > 0) {
@@ -197,37 +206,77 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return []
   })()
 
-  const addProject = useCallback(async (name: string) => {
-    const p = await createProject(name)
-    setProjects((prev) => [...prev, p])
-    setActiveProjectId(p.id)
-    setSessions((prev) => ({ ...prev, [p.id]: [] }))
-    setMessages([])
-    setActiveSessionId(null)
-  }, [])
+  const addProject = useCallback(
+    async (name: string) => {
+      try {
+        const p = await createProject(name)
+        setProjects((prev) => [...prev, p])
+        setActiveProjectId(p.id)
+        setSessions((prev) => ({ ...prev, [p.id]: [] }))
+        setMessages([])
+        setActiveSessionId(null)
+        setOpenSourceIds([])
+        setActiveSourceTabId(null)
+        setSelectedSourceIds([])
+        setSelectedSourcesForQuery([])
+        setPreviewSourceId(null)
+        setStats(null)
+        setComposer('')
+        setView('chat')
+        showToast(`Project "${p.name}" created`, 'success')
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : 'Failed to create project', 'error')
+      }
+    },
+    [showToast],
+  )
 
-  const renameProjectLocal = useCallback(async (id: number, name: string) => {
-    const updated = await renameProject(id, name)
-    setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)))
-  }, [])
+  const renameProjectLocal = useCallback(
+    async (id: number, name: string) => {
+      try {
+        const updated = await renameProject(id, name)
+        setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)))
+        showToast(`Renamed project to "${updated.name}"`, 'success')
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : 'Failed to rename project', 'error')
+      }
+    },
+    [showToast],
+  )
 
   const removeProject = useCallback(
     async (id: number) => {
-      await deleteProject(id)
-      setProjects((prev) => prev.filter((p) => p.id !== id))
-      setSessions((prev) => {
-        const n = { ...prev }
-        delete n[id]
-        return n
-      })
-      if (activeProjectId === id) {
-        setActiveProjectId(null)
-        setActiveSessionId(null)
-        setMessages([])
-        setStats(null)
+      try {
+        await deleteProject(id)
+        setProjects((prev) => {
+          const next = prev.filter((p) => p.id !== id)
+          if (activeProjectId === id) {
+            setActiveProjectId(next.length > 0 ? next[0].id : null)
+          }
+          return next
+        })
+        setSessions((prev) => {
+          const n = { ...prev }
+          delete n[id]
+          return n
+        })
+        if (activeProjectId === id) {
+          setActiveSessionId(null)
+          setMessages([])
+          setStats(null)
+          setOpenSourceIds([])
+          setActiveSourceTabId(null)
+          setSelectedSourceIds([])
+          setSelectedSourcesForQuery([])
+          setPreviewSourceId(null)
+          setComposer('')
+        }
+        showToast('Project deleted successfully', 'success')
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : 'Failed to delete project', 'error')
       }
     },
-    [activeProjectId],
+    [activeProjectId, showToast],
   )
 
   const setActiveProject = useCallback(
@@ -238,6 +287,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setMessages([])
       setComposer('')
       setSelectedSourceIds([])
+      setSelectedSourcesForQuery([])
+      setOpenSourceIds([])
+      setActiveSourceTabId(null)
+      setPreviewSourceId(null)
       setSelectedText('')
       setActiveTool(null)
       setView('chat')
@@ -270,15 +323,6 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }))
       setMessages(formatted)
     } catch {}
-  }, [])
-
-  const showToast = useCallback((message: string, type: ToastType = 'success', duration = 4000) => {
-    const id = uuidv4()
-    setToasts((prev) => [...prev, { id, message, type, duration }])
-  }, [])
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
   const removeSession = useCallback(

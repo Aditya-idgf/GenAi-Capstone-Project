@@ -58,6 +58,7 @@ class QueryRequest(BaseModel):
     project_id: int
     question: str
     source_count: int = 4
+    filenames: Optional[List[str]] = None
 
 class SourceResponse(BaseModel):
     number: int
@@ -66,6 +67,8 @@ class SourceResponse(BaseModel):
     chunk: int
     excerpt: str
     collection: str
+    pages: Optional[List[int]] = None
+    excerpts: Optional[List[str]] = None
 
 class QueryResponse(BaseModel):
     answer: str
@@ -157,11 +160,38 @@ def rename_project(project_id: int, body: ProjectCreate, db: Session = Depends(g
 @app.delete("/projects/{project_id}")
 def delete_project(project_id: int, db: Session = Depends(get_db)):
     p = get_project_or_404(project_id, db)
-    # Remove uploaded files from disk
+    # 1. Remove uploaded files and directory from disk safely
+    project_dir = os.path.join(UPLOAD_DIR, str(project_id))
     docs = db.query(models.Document).filter(models.Document.project_id == project_id).all()
     for d in docs:
         if d.file_path and os.path.exists(d.file_path):
-            os.remove(d.file_path)
+            try:
+                os.remove(d.file_path)
+            except Exception as e:
+                print(f"Warning: could not remove file {d.file_path}: {e}")
+    if os.path.exists(project_dir):
+        try:
+            shutil.rmtree(project_dir, ignore_errors=True)
+        except Exception as e:
+            print(f"Warning: could not remove directory {project_dir}: {e}")
+
+    # 2. Remove all vector chunks from Chroma
+    try:
+        from rag_pipeline import vector_store
+        vector_store._collection.delete(where={"project_id": project_id})
+    except Exception as e:
+        print(f"Warning: failed to delete project {project_id} from vector store: {e}")
+
+    # 3. Explicitly delete related DB records to avoid foreign key constraints / stale rows
+    try:
+        sessions = db.query(models.ChatSession).filter(models.ChatSession.project_id == project_id).all()
+        for s in sessions:
+            db.query(models.ChatMessage).filter(models.ChatMessage.session_id == s.id).delete(synchronize_session=False)
+        db.query(models.ChatSession).filter(models.ChatSession.project_id == project_id).delete(synchronize_session=False)
+        db.query(models.Document).filter(models.Document.project_id == project_id).delete(synchronize_session=False)
+    except Exception as e:
+        print(f"Warning cleaning child records: {e}")
+
     db.delete(p)
     db.commit()
     return {"detail": "Deleted"}
@@ -187,6 +217,8 @@ def delete_session(session_id: str, db: Session = Depends(get_db)):
     sess = db.query(models.ChatSession).filter(models.ChatSession.id == session_id).first()
     if not sess:
         raise HTTPException(status_code=404, detail="Session not found")
+    # Delete associated messages first to ensure complete cleanup
+    db.query(models.ChatMessage).filter(models.ChatMessage.session_id == session_id).delete()
     db.delete(sess)
     db.commit()
     return {"detail": "Deleted"}
@@ -239,9 +271,10 @@ def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
         sess.title = request.question[:72]
         db.commit()
 
-    # Run RAG chain
+    # Run RAG chain scoped to this project across all files (or selected filenames)
     try:
-        chain    = get_rag_chain(k=request.source_count)
+        print(f"DEBUG query_chatbot: project_id={request.project_id}, filenames={request.filenames}")
+        chain    = get_rag_chain(project_id=request.project_id, k=request.source_count, filenames=request.filenames)
         response = chain.invoke({"input": request.question, "chat_history": chat_history})
         answer   = response["answer"]
         sources  = extract_sources(response)
@@ -286,7 +319,7 @@ async def upload_document(
     collection_name = f"project_{project_id}_{project.name}"
 
     try:
-        stats = process_pdf(dest, collection_name=collection_name)
+        stats = process_pdf(dest, project_id=project_id, collection_name=collection_name)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error processing PDF: {exc}")
 
@@ -330,6 +363,15 @@ def delete_document(doc_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Document not found")
     if doc.file_path and os.path.exists(doc.file_path):
         os.remove(doc.file_path)
+    
+    # Remove chunks from vector store
+    from rag_pipeline import vector_store
+    try:
+        # Chroma deletes by where clause
+        vector_store._collection.delete(where={"$and": [{"project_id": doc.project_id}, {"filename": doc.filename}]})
+    except Exception as e:
+        print(f"Warning: failed to delete from vector store: {e}")
+
     db.delete(doc)
     db.commit()
     return {"detail": "Deleted"}

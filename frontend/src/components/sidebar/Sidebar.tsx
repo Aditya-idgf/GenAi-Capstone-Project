@@ -1,5 +1,6 @@
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Brand } from './Brand'
+import { Navigation } from './Navigation'
 import { ProfileCard } from './ProfileCard'
 import { ProjectList } from './ProjectList'
 import { useWorkspace } from '../../state/WorkspaceContext'
@@ -23,6 +24,7 @@ export function Sidebar() {
         {!sidebarCollapsed && (
           <>
             <Brand />
+            <Navigation />
             <ProjectList />
           </>
         )}

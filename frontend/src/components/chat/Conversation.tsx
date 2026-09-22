@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useWorkspace } from '../../state/WorkspaceContext'
 import { ToolWorkspace } from '../tools/ToolWorkspace'
 import { AssistantResponse } from './AssistantResponse'
@@ -8,8 +8,13 @@ export function Conversation() {
   const { messages } = useWorkspace()
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  const previousLengthRef = useRef(messages.length)
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > previousLengthRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+    previousLengthRef.current = messages.length
   }, [messages])
 
   return (

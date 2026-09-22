@@ -45,7 +45,7 @@ export function MessageComposer() {
   const isDisabled = isQuerying || activeProjectId === null
 
   return (
-    <form className="composer" onSubmit={handleSubmit}>
+    <form className="composer" onSubmit={handleSubmit} style={{ flexDirection: 'row', alignItems: 'flex-end', padding: '8px 14px', gap: '12px' }}>
       <textarea
         ref={textareaRef}
         value={composer}
@@ -58,39 +58,42 @@ export function MessageComposer() {
         }
         rows={MIN_ROWS}
         disabled={isDisabled}
+        style={{ flex: 1, marginTop: '10px', marginBottom: '10px' }}
       />
-      <div className="composer__row">
-        <div className="composer__selects">
-          {/* Real source filter — checkbox dropdown of actual project docs */}
-          <SourceFilterSelect />
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '6px' }}>
+        <SourceFilterSelect />
 
-          {/* Model selector — only real model */}
-          <ComposerSelect
-            icon={<Cpu size={14} strokeWidth={1.75} />}
-            title={model.replace('llama-3.1-', 'Llama 3.1 ')}
-            subtitle="Model"
-            value={model}
-            onChange={setModel}
-            options={MODELS.map((m) => ({
-              label: m === 'llama-3.1-8b-instant' ? 'Llama 3.1 8B (Groq)' : m,
-              value: m,
-            }))}
-          />
-        </div>
-        <div className="composer__actions">
-          <label className={`icon-btn composer__attach${isQuerying ? ' disabled' : ''}`}>
-            <Paperclip size={15} strokeWidth={1.8} />
-            <input className="sr-only" type="file" disabled={isQuerying} />
-          </label>
-          <button
-            className="send-btn"
-            type="submit"
-            aria-label="Send"
-            disabled={isDisabled || !composer.trim()}
-          >
-            <Send size={15} strokeWidth={1.8} />
-          </button>
-        </div>
+        <ComposerSelect
+          icon={<Cpu size={14} strokeWidth={1.75} />}
+          title={model.replace('llama-3.1-', 'Llama 3.1 ')}
+          subtitle="Model"
+          value={model}
+          onChange={setModel}
+          options={MODELS.map((m) => ({
+            label: m === 'llama-3.1-8b-instant' ? 'Llama 3.1 8B (Groq)' : m,
+            value: m,
+          }))}
+        />
+        
+        <label className={`icon-btn composer__attach${isQuerying ? ' disabled' : ''}`} style={{ margin: 0 }}>
+          <Paperclip size={15} strokeWidth={1.8} />
+          <input className="sr-only" type="file" disabled={isQuerying} />
+        </label>
+        
+        <button
+          className="send-btn"
+          type="submit"
+          aria-label="Send"
+          disabled={isDisabled || !composer.trim()}
+          style={{ margin: 0 }}
+        >
+          {isQuerying ? (
+            <div className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+          ) : (
+            <Send size={15} strokeWidth={2} />
+          )}
+        </button>
       </div>
     </form>
   )

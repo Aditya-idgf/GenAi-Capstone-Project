@@ -13,7 +13,7 @@ import { SettingsView } from './views/SettingsView'
 import { useWorkspace } from '../state/WorkspaceContext'
 
 export function AppShell() {
-  const { view, sidebarCollapsed, railCollapsed, openSourceIds } = useWorkspace()
+  const { view, sidebarCollapsed, railCollapsed, openSourceIds, messages } = useWorkspace()
   const splitActive = openSourceIds.length > 0
 
   // Drag-to-resize state
@@ -51,7 +51,7 @@ export function AppShell() {
           >
             {/* Left: chat area */}
             <div
-              className="workspace__chat-pane"
+              className={`workspace__chat-pane${messages.length === 0 ? ' is-empty' : ''}`}
               style={splitActive ? { width: `${splitPercent}%` } : undefined}
             >
               <Conversation />

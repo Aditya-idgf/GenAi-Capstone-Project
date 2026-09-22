@@ -42,7 +42,7 @@ else:
 
 
 # ── Document ingestion ────────────────────────────────────────────────────────
-def process_pdf(file_path: str, collection_name: str = "default") -> dict:
+def process_pdf(file_path: str, project_id: int = 1, collection_name: str = "default") -> dict:
     """Load a PDF, chunk it, embed chunks into Chroma, return stats."""
     loader   = PyPDFLoader(file_path)
     documents = loader.load()
@@ -50,9 +50,12 @@ def process_pdf(file_path: str, collection_name: str = "default") -> dict:
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks   = splitter.split_documents(documents)
 
-    # Tag every chunk with its collection so we can filter later
+    filename = os.path.basename(file_path)
+    # Tag every chunk with project_id, collection, and filename so we can filter later
     for chunk in chunks:
+        chunk.metadata["project_id"] = project_id
         chunk.metadata["collection"] = collection_name
+        chunk.metadata["filename"] = filename
 
     vector_store.add_documents(chunks)
 
@@ -63,20 +66,38 @@ def process_pdf(file_path: str, collection_name: str = "default") -> dict:
 
 
 # ── RAG chain ─────────────────────────────────────────────────────────────────
-def get_rag_chain(k: int = 4):
+def get_rag_chain(project_id: int = None, k: int = 4, filenames: list[str] = None):
     """Build and return the conversational RAG chain.
 
+    project_id – filter retrieval across all files in this project.
     k – number of source chunks to retrieve.
+    filenames – optional list of specific filenames to restrict retrieval to.
     """
-    retriever = vector_store.as_retriever(search_kwargs={"k": k})
+    search_kwargs = {"k": k}
+    filters = []
+    if project_id is not None:
+        filters.append({"project_id": project_id})
+    if filenames and len(filenames) > 0:
+        if len(filenames) == 1:
+            filters.append({"filename": filenames[0]})
+        else:
+            filters.append({"filename": {"$in": filenames}})
+
+    if len(filters) == 1:
+        search_kwargs["filter"] = filters[0]
+    elif len(filters) > 1:
+        search_kwargs["filter"] = {"$and": filters}
+
+    retriever = vector_store.as_retriever(search_kwargs=search_kwargs)
 
     # 1. History-aware question reformulation
     contextualize_prompt = ChatPromptTemplate.from_messages([
         ("system",
          "Given a chat history and the latest user question "
-         "which might reference context in the chat history, "
+         "which might reference context in the chat history or introduce a brand new topic, "
          "formulate a standalone question that can be understood "
-         "without the chat history. Do NOT answer the question, "
+         "without the chat history. Note that the user might have switched to a different document, so prioritize the latest user question's intent. "
+         "Do NOT answer the question, "
          "just reformulate it if needed and otherwise return it as is."),
         MessagesPlaceholder("chat_history"),
         ("human", "{input}"),
@@ -85,13 +106,18 @@ def get_rag_chain(k: int = 4):
         llm, retriever, contextualize_prompt
     )
 
-    # 2. Answer generation
+    # 2. Answer generation — Prioritize document context
     qa_prompt = ChatPromptTemplate.from_messages([
         ("system",
-         "You are a knowledgeable assistant for document question-answering. "
-         "Use the following retrieved context to answer the question accurately. "
-         "If you don't know the answer based on the context, say so clearly. "
-         "Be thorough but concise.\n\n{context}"),
+         "You are DocuMind, an intelligent and helpful AI document assistant. "
+         "The uploaded documents provided below in {context} are your 'Bible' and utmost source of truth.\n\n"
+         "CRITICAL GUIDELINES:\n"
+         "1. You MUST heavily prioritize the provided {context} for your current answer over ANY previous chat history. The user may have switched which documents they are querying, so the new context is paramount.\n"
+         "2. Answer questions comprehensively and format your output beautifully (use markdown, bolding, bullet points, etc.).\n"
+         "3. If the user's question relates to the documents, use the context extensively to form your answer.\n"
+         "4. If the user's question is completely unrelated to the documents or context is empty, you MAY use your general knowledge, but politely mention that the answer is not drawn from the uploaded sources.\n"
+         "5. Always aim to be helpful, accurate, and structured in your response.\n\n"
+         "Context from currently selected documents:\n{context}"),
         MessagesPlaceholder("chat_history"),
         ("human", "{input}"),
     ])
@@ -102,36 +128,47 @@ def get_rag_chain(k: int = 4):
 
 # ── Source metadata extraction ────────────────────────────────────────────────
 def extract_sources(response: dict) -> list[dict]:
-    """Pull page/chunk metadata out of the RAG chain response.
+    """Pull metadata out of RAG response, grouping by unique document (file).
 
-    Deduplicates on (filename, page, first-200-chars-of-content) so that
-    genuinely different chunks on the same page are kept, but exact repeated
-    retrievals are collapsed.
+    Each unique file appears ONCE in sources, with aggregated page numbers
+    (e.g., [2, 9]), and excerpts from all matching chunks in that file.
     """
-    sources = []
-    seen    = set()
-    counter = 1
+    file_map = {}
 
     for doc in response.get("context", []):
-        meta     = doc.metadata
-        filename = os.path.basename(meta.get("source", "Unknown document"))
-        page     = meta.get("page", 0)
-        # Use first 200 chars of content as part of the dedup key
-        content_key = doc.page_content[:200].strip()
-        key = (filename, page, content_key)
+        meta = doc.metadata
+        raw_source = meta.get("source", "Unknown document")
+        filename = os.path.basename(raw_source)
+        page = meta.get("page", 0) + 1  # 1-indexed
 
-        if key in seen:
-            continue
-        seen.add(key)
+        if filename not in file_map:
+            file_map[filename] = {
+                "title": filename,
+                "pages": set(),
+                "chunks_count": 0,
+                "excerpts": [],
+                "collection": meta.get("collection", "default"),
+            }
 
+        file_map[filename]["pages"].add(page)
+        file_map[filename]["chunks_count"] += 1
+        excerpt_text = doc.page_content[:300].strip()
+        if excerpt_text and excerpt_text not in file_map[filename]["excerpts"]:
+            file_map[filename]["excerpts"].append(excerpt_text)
+
+    sources = []
+    for counter, (filename, data) in enumerate(file_map.items(), start=1):
+        sorted_pages = sorted(list(data["pages"]))
+        primary_page = sorted_pages[0] if sorted_pages else 1
         sources.append({
-            "number":     counter,
-            "title":      filename,
-            "page":       page + 1,          # 0-indexed → 1-indexed
-            "chunk":      counter,
-            "excerpt":    doc.page_content[:300],
-            "collection": meta.get("collection", "default"),
+            "number": counter,
+            "title": filename,
+            "page": primary_page,
+            "pages": sorted_pages,
+            "chunk": data["chunks_count"],
+            "excerpt": data["excerpts"][0] if data["excerpts"] else "",
+            "excerpts": data["excerpts"],
+            "collection": data["collection"],
         })
-        counter += 1
 
     return sources
