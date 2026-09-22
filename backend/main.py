@@ -436,3 +436,9 @@ def get_global_stats(db: Session = Depends(get_db)):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    # This allows you to run the server simply by typing `python main.py`
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
