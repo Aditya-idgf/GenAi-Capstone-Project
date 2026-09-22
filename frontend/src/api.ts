@@ -18,6 +18,8 @@ export interface ApiSource {
   chunk: number
   excerpt: string
   collection: string
+  pages?: number[]
+  excerpts?: string[]
 }
 
 export interface QueryResponse {
@@ -127,6 +129,7 @@ export function sendQuery(payload: {
   project_id: number
   question: string
   source_count?: number
+  filenames?: string[]
 }): Promise<QueryResponse> {
   return request('/query', {
     method: 'POST',

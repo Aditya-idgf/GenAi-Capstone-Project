@@ -155,7 +155,11 @@ function ProjectRow({ project }: { project: ApiProject }) {
           <button
             className="proj-new-chat"
             type="button"
-            onClick={() => startNewChat(project.id)}
+            onClick={() => {
+              // If there's already an empty "New Chat" session, don't create another
+              const hasEmptyChat = projSessions.some((s) => s.title === 'New Chat')
+              if (!hasEmptyChat) startNewChat(project.id)
+            }}
           >
             <Plus size={13} strokeWidth={2} />
             New Chat
@@ -195,26 +199,47 @@ function ChatRow({
         <MessageSquare size={13} strokeWidth={1.75} />
         <span>{session.title}</span>
       </button>
-      <div className="proj-row__menu-wrap" ref={menuRef}>
+
+      <div className="chat-row__actions">
         <button
-          className="proj-row__more"
+          className="chat-row__del-btn"
           type="button"
-          aria-label="Chat options"
-          onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
+          aria-label="Delete chat"
+          title="Delete chat"
+          onClick={(e) => {
+            e.stopPropagation()
+            removeSession(session.id)
+          }}
         >
-          <MoreVertical size={13} strokeWidth={1.8} />
+          <Trash2 size={13} strokeWidth={1.75} />
         </button>
-        {menuOpen && (
-          <div className="menu proj-menu">
-            <button
-              type="button"
-              className="danger"
-              onClick={() => { removeSession(session.id); setMenuOpen(false) }}
-            >
-              <Trash2 size={13} strokeWidth={1.75} /> Delete chat
-            </button>
-          </div>
-        )}
+
+        <div className="proj-row__menu-wrap" ref={menuRef}>
+          <button
+            className="proj-row__more"
+            type="button"
+            aria-label="Chat options"
+            onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
+          >
+            <MoreVertical size={13} strokeWidth={1.8} />
+          </button>
+          {menuOpen && (
+            <div className="menu proj-menu">
+              <button
+                type="button"
+                className="danger"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  removeSession(session.id)
+                  setMenuOpen(false)
+                }}
+              >
+                <Trash2 size={13} strokeWidth={1.75} /> Delete chat
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

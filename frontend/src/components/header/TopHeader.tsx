@@ -1,4 +1,4 @@
-﻿import { Loader2, Menu, PanelRight, Search, Sun, Upload } from 'lucide-react'
+import { Loader2, Menu, PanelRight, Search, Sun, Trash2, Upload } from 'lucide-react'
 import { useRef } from 'react'
 import { useWorkspace } from '../../state/WorkspaceContext'
 
@@ -10,18 +10,44 @@ export function TopHeader() {
     setRailOpen,
     activeProjectId,
     projects,
+    setActiveProject,
+    activeSessionId,
+    sessions,
+    removeSession,
     uploadFile,
     isUploading,
+    showToast,
   } = useWorkspace()
 
   const fileRef = useRef<HTMLInputElement>(null)
   const activeProject = projects.find((p) => p.id === activeProjectId)
+  const projSessions = activeProjectId ? sessions[activeProjectId] ?? [] : []
+  const activeSession = projSessions.find((s) => s.id === activeSessionId)
+
+  const handleUploadClick = () => {
+    if (activeProjectId === null) {
+      if (projects.length > 0) {
+        setActiveProject(projects[0].id)
+        showToast(`Switched to project "${projects[0].name}". Click Upload again.`, 'info')
+      } else {
+        showToast('Please create a project first before uploading documents.', 'info')
+      }
+      return
+    }
+    if (fileRef.current) {
+      fileRef.current.value = ''
+      fileRef.current.click()
+    }
+  }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    await uploadFile(file)
-    if (fileRef.current) fileRef.current.value = ''
+    try {
+      await uploadFile(file)
+    } finally {
+      if (fileRef.current) fileRef.current.value = ''
+    }
   }
 
   return (
@@ -38,6 +64,23 @@ export function TopHeader() {
         {activeProject && (
           <span className="topbar__project">{activeProject.name}</span>
         )}
+        {activeSession && (
+          <>
+            <span className="topbar__divider">/</span>
+            <span className="topbar__session-title" title={activeSession.title}>
+              {activeSession.title}
+            </span>
+            <button
+              className="icon-btn icon-btn--delete-chat"
+              type="button"
+              aria-label="Delete chat"
+              title="Delete chat"
+              onClick={() => removeSession(activeSession.id)}
+            >
+              <Trash2 size={14} strokeWidth={1.8} />
+            </button>
+          </>
+        )}
       </div>
 
       <div className="topbar__right">
@@ -53,14 +96,14 @@ export function TopHeader() {
           type="file"
           accept=".pdf"
           onChange={handleFileChange}
-          disabled={isUploading || activeProjectId === null}
+          disabled={isUploading}
         />
         <button
           className="topbar__upload-btn"
           type="button"
-          disabled={isUploading || activeProjectId === null}
+          disabled={isUploading}
           title={activeProjectId === null ? 'Select a project first' : 'Upload PDF to project'}
-          onClick={() => fileRef.current?.click()}
+          onClick={handleUploadClick}
         >
           {isUploading
             ? <Loader2 size={15} strokeWidth={1.8} className="spin" />

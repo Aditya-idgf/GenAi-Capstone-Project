@@ -1,4 +1,4 @@
-﻿import {
+import {
   createContext,
   useCallback,
   useContext,
@@ -11,9 +11,11 @@ import {
   createProject,
   deleteProject,
   deleteSession,
+  fetchHistory,
   fetchProjectStats,
   fetchProjects,
   fetchSessions,
+  parseSources,
   renameProject,
   sendQuery,
   uploadDocument,
@@ -42,8 +44,12 @@ type WorkspaceContextValue = {
   setSearchOpen: (open: boolean) => void
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
+  sidebarCollapsed: boolean
+  setSidebarCollapsed: (v: boolean) => void
   railOpen: boolean
   setRailOpen: (open: boolean) => void
+  railCollapsed: boolean
+  setRailCollapsed: (v: boolean) => void
   projects: ApiProject[]
   activeProjectId: number | null
   setActiveProject: (id: number) => void
@@ -71,6 +77,14 @@ type WorkspaceContextValue = {
   activeSources: ApiSource[]
   selectedSourceIds: string[]
   toggleSource: (id: string) => void
+  selectedSourcesForQuery: string[]
+  setSelectedSourcesForQuery: (v: string[]) => void
+  openSourceIds: string[]          // tabs open in split pane
+  activeSourceTabId: string | null // which tab is focused
+  openSourceTab: (id: string) => void
+  closeSourceTab: (id: string) => void
+  setActiveSourceTab: (id: string) => void
+  // Legacy compat — keeps SourcePreview working
   previewSourceId: string | null
   setPreviewSourceId: (id: string | null) => void
   stats: KnowledgeStats | null
@@ -104,7 +118,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<ThemeId>('dark')
   const [searchOpen, setSearchOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [railOpen, setRailOpen] = useState(false)
+  const [railCollapsed, setRailCollapsed] = useState(false)
   const [projects, setProjects] = useState<ApiProject[]>([])
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null)
   const [sessions, setSessions] = useState<Record<number, ApiChatSession[]>>({})
@@ -118,7 +134,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
+  const [selectedSourcesForQuery, setSelectedSourcesForQuery] = useState<string[]>([])
   const [previewSourceId, setPreviewSourceId] = useState<string | null>(null)
+  const [openSourceIds, setOpenSourceIds] = useState<string[]>([])
+  const [activeSourceTabId, setActiveSourceTabId] = useState<string | null>(null)
   const [stats, setStats] = useState<KnowledgeStats | null>(null)
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [selectedText, setSelectedText] = useState('')
@@ -233,36 +252,25 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [])
 
-  const openSession = useCallback((sess: ApiChatSession) => {
+  const openSession = useCallback(async (sess: ApiChatSession) => {
     setActiveSessionId(sess.id)
     setMessages([])
     setComposer('')
     setSelectedSourceIds([])
     setActiveTool(null)
     setView('chat')
+    try {
+      const history = await fetchHistory(sess.id)
+      const formatted: ChatMessage[] = history.map((m) => ({
+        id: String(m.id),
+        role: m.role,
+        content: m.content,
+        timestamp: '',
+        sources: parseSources(m.sources),
+      }))
+      setMessages(formatted)
+    } catch {}
   }, [])
-
-  const removeSession = useCallback(
-    async (sessionId: string) => {
-      // Always remove from local state first so UI updates immediately
-      setSessions((prev) => {
-        const updated = { ...prev }
-        for (const pid in updated) {
-          updated[Number(pid)] = updated[Number(pid)].filter((s) => s.id !== sessionId)
-        }
-        return updated
-      })
-      if (activeSessionId === sessionId) {
-        setActiveSessionId(null)
-        setMessages([])
-      }
-      // Fire-and-forget the API call; ignore 404 for optimistic sessions
-      try {
-        await deleteSession(sessionId)
-      } catch {}
-    },
-    [activeSessionId],
-  )
 
   const showToast = useCallback((message: string, type: ToastType = 'success', duration = 4000) => {
     const id = uuidv4()
@@ -273,14 +281,66 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
+  const removeSession = useCallback(
+    async (sessionId: string) => {
+      let nextSessionId: string | null = null
+      setSessions((prev) => {
+        const updated = { ...prev }
+        for (const pid in updated) {
+          const filtered = updated[Number(pid)].filter((s) => s.id !== sessionId)
+          updated[Number(pid)] = filtered
+          if (activeProjectId !== null && Number(pid) === activeProjectId && filtered.length > 0) {
+            nextSessionId = filtered[0].id
+          }
+        }
+        return updated
+      })
+
+      if (activeSessionId === sessionId) {
+        if (nextSessionId) {
+          setActiveSessionId(nextSessionId)
+          fetchHistory(nextSessionId)
+            .then((history) => {
+              setMessages(
+                history.map((m) => ({
+                  id: String(m.id),
+                  role: m.role,
+                  content: m.content,
+                  timestamp: '',
+                  sources: parseSources(m.sources),
+                })),
+              )
+            })
+            .catch(() => setMessages([]))
+        } else {
+          setActiveSessionId(null)
+          setMessages([])
+        }
+      }
+
+      showToast('Chat deleted', 'info')
+
+      // Fire-and-forget the API call; ignore 404 for optimistic sessions
+      try {
+        await deleteSession(sessionId)
+      } catch {}
+    },
+    [activeSessionId, activeProjectId, showToast],
+  )
+
   const uploadFile = useCallback(
     async (file: File) => {
-      if (activeProjectId === null) return
+      if (activeProjectId === null) {
+        showToast('Please select or create a project first', 'error')
+        return
+      }
       setIsUploading(true)
       setUploadError(null)
       try {
         const doc = await uploadDocument(activeProjectId, file)
         refreshStats()
+        // Refresh project list so document_count updates immediately
+        fetchProjects().then(setProjects).catch(() => {})
         showToast(`Uploaded ${doc.filename} successfully`, 'success')
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Upload failed'
@@ -353,6 +413,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           project_id: activeProjectId,
           question: text.trim(),
           source_count: sourceCount,
+          filenames: selectedSourcesForQuery.length > 0 ? selectedSourcesForQuery : undefined,
         })
 
         const assistantMsg: ChatMessage = {
@@ -385,8 +446,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setIsQuerying(false)
       }
     },
-    [isQuerying, activeProjectId, activeSessionId, sourceCount, refreshStats],
+    [isQuerying, activeProjectId, activeSessionId, sourceCount, selectedSourcesForQuery, refreshStats],
   )
+
+  const openSourceTab = useCallback((id: string) => {
+    setOpenSourceIds((prev) => prev.includes(id) ? prev : [...prev, id])
+    setActiveSourceTabId(id)
+  }, [])
+
+  const closeSourceTab = useCallback((id: string) => {
+    setOpenSourceIds((prev) => {
+      const next = prev.filter((x) => x !== id)
+      setActiveSourceTabId((cur) => {
+        if (cur !== id) return cur
+        return next.length > 0 ? next[next.length - 1] : null
+      })
+      return next
+    })
+  }, [])
 
   const toggleSource = useCallback((id: string) => {
     setSelectedSourceIds((prev) =>
@@ -403,7 +480,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     theme, toggleTheme,
     searchOpen, setSearchOpen,
     sidebarOpen, setSidebarOpen,
+    sidebarCollapsed, setSidebarCollapsed,
     railOpen, setRailOpen,
+    railCollapsed, setRailCollapsed,
     projects, activeProjectId,
     setActiveProject, addProject, renameProjectLocal, removeProject,
     sessions, loadSessions,
@@ -417,6 +496,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     uploadFile, isUploading, uploadError,
     activeSources,
     selectedSourceIds, toggleSource,
+    selectedSourcesForQuery, setSelectedSourcesForQuery,
+    openSourceIds, activeSourceTabId,
+    openSourceTab, closeSourceTab,
+    setActiveSourceTab: setActiveSourceTabId,
     previewSourceId, setPreviewSourceId,
     stats, refreshStats,
     activeTool,

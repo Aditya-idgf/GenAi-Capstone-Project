@@ -1,8 +1,9 @@
-﻿import { Cpu, Link2, Paperclip, Send } from 'lucide-react'
+import { Cpu, Paperclip, Send } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { MODELS, SOURCE_COUNTS } from '../../data'
+import { MODELS } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
 import { ComposerSelect } from './ComposerSelect'
+import { SourceFilterSelect } from './SourceFilterSelect'
 
 const LINE_H     = 23
 const MIN_ROWS   = 1
@@ -10,7 +11,6 @@ const MAX_HEIGHT = LINE_H * 6 + 22
 
 export function MessageComposer() {
   const {
-    sourceCount, setSourceCount,
     model, setModel,
     composer, setComposer,
     sendMessage, isQuerying,
@@ -61,21 +61,20 @@ export function MessageComposer() {
       />
       <div className="composer__row">
         <div className="composer__selects">
-          <ComposerSelect
-            icon={<Link2 size={14} strokeWidth={1.75} />}
-            title={String(sourceCount)}
-            subtitle="Sources"
-            value={String(sourceCount)}
-            onChange={(v) => setSourceCount(Number(v))}
-            options={SOURCE_COUNTS.map((c) => ({ label: `${c} Sources`, value: String(c) }))}
-          />
+          {/* Real source filter — checkbox dropdown of actual project docs */}
+          <SourceFilterSelect />
+
+          {/* Model selector — only real model */}
           <ComposerSelect
             icon={<Cpu size={14} strokeWidth={1.75} />}
-            title={model}
+            title={model.replace('llama-3.1-', 'Llama 3.1 ')}
             subtitle="Model"
             value={model}
             onChange={setModel}
-            options={MODELS.map((m) => ({ label: m, value: m }))}
+            options={MODELS.map((m) => ({
+              label: m === 'llama-3.1-8b-instant' ? 'Llama 3.1 8B (Groq)' : m,
+              value: m,
+            }))}
           />
         </div>
         <div className="composer__actions">

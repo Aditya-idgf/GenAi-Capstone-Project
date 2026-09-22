@@ -1,12 +1,12 @@
-﻿import { KnowledgeOverview } from '../sidebar/KnowledgeOverview'
-import { SourcePreview } from './SourcePreview'
+import { PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { KnowledgeOverview } from '../sidebar/KnowledgeOverview'
 import { SourcesPanel } from './SourcesPanel'
 import { ToolHint } from './ToolHint'
 import { ToolsPanel } from './ToolsPanel'
 import { useWorkspace } from '../../state/WorkspaceContext'
 
 export function ContextRail() {
-  const { railOpen, setRailOpen } = useWorkspace()
+  const { railOpen, setRailOpen, railCollapsed, setRailCollapsed } = useWorkspace()
 
   return (
     <>
@@ -18,12 +18,30 @@ export function ContextRail() {
           onClick={() => setRailOpen(false)}
         />
       )}
-      <aside className={`rail${railOpen ? ' is-open' : ''}`}>
-        <SourcesPanel />
-        <KnowledgeOverview />
-        <ToolsPanel />
-        <ToolHint />
-        <SourcePreview />
+      <aside className={`rail${railOpen ? ' is-open' : ''}${railCollapsed ? ' is-collapsed' : ''}`}>
+        {!railCollapsed && (
+          <>
+            <SourcesPanel />
+            <KnowledgeOverview />
+            <ToolsPanel />
+            <ToolHint />
+          </>
+        )}
+        {/* Collapse button always at bottom */}
+        <div className="rail__collapse-btn-wrap">
+          <button
+            className="rail__collapse-btn"
+            type="button"
+            aria-label={railCollapsed ? 'Expand panel' : 'Collapse panel'}
+            title={railCollapsed ? 'Expand panel' : 'Collapse panel'}
+            onClick={() => setRailCollapsed(!railCollapsed)}
+          >
+            {railCollapsed
+              ? <PanelRightOpen size={16} strokeWidth={1.75} />
+              : <PanelRightClose size={16} strokeWidth={1.75} />
+            }
+          </button>
+        </div>
       </aside>
     </>
   )

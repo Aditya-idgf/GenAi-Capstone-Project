@@ -186,7 +186,7 @@ export const SEARCH_INDEX: SearchHit[] = [
   })),
 ]
 
-export const MODELS = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b']
+export const MODELS = ['llama-3.1-8b-instant']
 
 export const SOURCE_COUNTS = [4, 6, 8, 10, 12, 16]
 
