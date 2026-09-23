@@ -1050,10 +1050,12 @@ kbd {
   font-size: 14.5px;
   line-height: 1.55;
   /* height set by JS; start at one line */
-  min-height: 23px;
-  max-height: 160px;
+  min-height: 24px;
+  max-height: 180px;
   overflow-y: hidden;         /* JS toggles to auto when content overflows */
   display: block;
+  padding: 4px 2px 6px;
+  box-sizing: border-box;
 }
 
 .composer textarea::placeholder { color: var(--text-muted); }
@@ -1080,7 +1082,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 40px;
+  height: 34px;
   padding: 0 9px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1128,22 +1130,36 @@ kbd {
 
 /* Attachment + send */
 .composer__attach {
-  width: 36px;
-  height: 36px;
-  border-color: var(--border);
-  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.composer__attach:hover {
+  background: var(--card-hover);
+  color: var(--text-primary);
+  border-color: #404857;
 }
 
 .send-btn {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   background: var(--accent);
   color: #0d1117;
   display: grid;
   place-items: center;
-  transition: background 160ms ease-out;
+  transition: background 160ms ease-out, transform 100ms ease;
   flex-shrink: 0;
 }
 
