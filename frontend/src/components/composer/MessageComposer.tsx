@@ -1,4 +1,4 @@
-import { Cpu, Paperclip, Send } from 'lucide-react'
+import { Cpu, Plus, Send, Loader2 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { MODELS } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
@@ -15,9 +15,30 @@ export function MessageComposer() {
     composer, setComposer,
     sendMessage, isQuerying,
     activeProjectId,
+    uploadFile, isUploading,
+    showToast, projects, setActiveProject,
   } = useWorkspace()
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (activeProjectId === null) {
+      if (projects.length > 0) {
+        setActiveProject(projects[0].id)
+        showToast(`Switched to project "${projects[0].name}". Please select file again.`, 'info')
+      } else {
+        showToast('Please create a project first before uploading documents.', 'info')
+      }
+      return
+    }
+    try {
+      await uploadFile(file)
+    } finally {
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     const el = textareaRef.current
@@ -45,7 +66,37 @@ export function MessageComposer() {
   const isDisabled = isQuerying || activeProjectId === null
 
   return (
-    <form className="composer" onSubmit={handleSubmit} style={{ flexDirection: 'row', alignItems: 'flex-end', padding: '8px 14px', gap: '12px' }}>
+    <form className="composer" onSubmit={handleSubmit} style={{ flexDirection: 'row', alignItems: 'flex-end', padding: '8px 14px', gap: '10px' }}>
+      <label
+        className={`icon-btn composer__attach${isQuerying || isUploading ? ' disabled' : ''}`}
+        style={{
+          margin: 0,
+          marginBottom: '5px',
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: isQuerying || isUploading ? 'not-allowed' : 'pointer',
+          flexShrink: 0,
+        }}
+        title="Add documents"
+      >
+        {isUploading ? (
+          <Loader2 size={16} strokeWidth={2} className="spin" />
+        ) : (
+          <Plus size={18} strokeWidth={2} />
+        )}
+        <input
+          className="sr-only"
+          type="file"
+          accept=".pdf"
+          disabled={isQuerying || isUploading}
+          onChange={handleFileChange}
+        />
+      </label>
+
       <textarea
         ref={textareaRef}
         value={composer}
@@ -58,7 +109,7 @@ export function MessageComposer() {
         }
         rows={MIN_ROWS}
         disabled={isDisabled}
-        style={{ flex: 1, marginTop: '10px', marginBottom: '10px' }}
+        style={{ flex: 1, marginTop: '8px', marginBottom: '8px' }}
       />
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '6px' }}>
@@ -75,11 +126,6 @@ export function MessageComposer() {
             value: m,
           }))}
         />
-        
-        <label className={`icon-btn composer__attach${isQuerying ? ' disabled' : ''}`} style={{ margin: 0 }}>
-          <Paperclip size={15} strokeWidth={1.8} />
-          <input className="sr-only" type="file" disabled={isQuerying} />
-        </label>
         
         <button
           className="send-btn"
