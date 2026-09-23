@@ -2783,3 +2783,18 @@ kbd {
 .rail.is-collapsed .panel__head .btn {
   display: none !important;
 }
+
+/* Tight empty chat layout */
+.workspace__chat-pane.is-empty .conversation {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.workspace__chat-pane.is-empty .conversation__empty {
+  padding: 0 !important;
+  margin: 0 0 16px 0 !important;
+}
+
+.workspace__chat-pane.is-empty .composer {
+  margin: 0 auto !important;
+}
