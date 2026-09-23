@@ -3,7 +3,6 @@ import { Conversation } from './chat/Conversation'
 import { SourceViewer } from './chat/SourceViewer'
 import { MessageComposer } from './composer/MessageComposer'
 import { SearchModal } from './header/SearchModal'
-import { TopHeader } from './header/TopHeader'
 import { ContextRail } from './rail/ContextRail'
 import { Sidebar } from './sidebar/Sidebar'
 import { ToastContainer } from './ui/ToastContainer'
@@ -19,6 +18,7 @@ export function AppShell() {
   // Drag-to-resize state
   const containerRef = useRef<HTMLDivElement>(null)
   const [splitPercent, setSplitPercent] = useState(55) // chat takes 55% by default
+  const [isDragging, setIsDragging] = useState(false)
 
   const gridCols = `${sidebarCollapsed ? '48px' : 'var(--sidebar-w)'} minmax(0,1fr) ${railCollapsed ? '48px' : 'var(--rail-w)'}`
 
@@ -26,12 +26,14 @@ export function AppShell() {
     e.preventDefault()
     const container = containerRef.current
     if (!container) return
+    setIsDragging(true)
     const rect = container.getBoundingClientRect()
     const onMove = (mv: MouseEvent) => {
       const pct = Math.min(80, Math.max(20, ((mv.clientX - rect.left) / rect.width) * 100))
       setSplitPercent(pct)
     }
     const onUp = () => {
+      setIsDragging(false)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
@@ -43,7 +45,6 @@ export function AppShell() {
     <div className="shell" style={{ gridTemplateColumns: gridCols }}>
       <Sidebar />
       <main className="workspace">
-        <TopHeader />
         {view === 'chat' ? (
           <div
             className={`workspace__chat${splitActive ? ' is-split' : ''}`}
@@ -62,13 +63,13 @@ export function AppShell() {
             {splitActive && (
               <>
                 <div
-                  className="workspace__split-handle"
+                  className={`workspace__split-handle${isDragging ? ' is-dragging' : ''}`}
                   onMouseDown={startDrag}
                   title="Drag to resize"
                 />
                 <div
                   className="workspace__source-pane"
-                  style={{ width: `${100 - splitPercent}%` }}
+                  style={{ width: `${100 - splitPercent}%`, pointerEvents: isDragging ? 'none' : 'auto' }}
                 >
                   <SourceViewer />
                 </div>

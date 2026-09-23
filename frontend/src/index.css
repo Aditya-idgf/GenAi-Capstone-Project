@@ -573,11 +573,18 @@ kbd {
 
 .workspace__chat-pane.is-empty {
   justify-content: center;
-  align-items: stretch;
+  align-items: center;
 }
 
 .workspace__chat-pane.is-empty .conversation {
   flex: 0 0 auto;
+  width: 100%;
+  max-width: 768px;
+}
+
+.workspace__chat-pane.is-empty .composer {
+  width: 100%;
+  max-width: 768px;
 }
 
 /* Drag handle between chat and source pane */
@@ -2715,4 +2722,64 @@ kbd {
 .toast__close:hover {
   background: var(--card-hover);
   color: var(--text-primary);
+}
+
+/* Collapsed sidebar/rail icon visibility overrides */
+.sidebar.is-collapsed .brand h1,
+.sidebar.is-collapsed .nav__label,
+.sidebar.is-collapsed .proj-list__head,
+.sidebar.is-collapsed .nav__item text,
+.sidebar.is-collapsed .proj-row span,
+.sidebar.is-collapsed .proj-row button.icon-btn,
+.sidebar.is-collapsed .nav__item {
+  color: transparent !important;
+}
+
+.sidebar.is-collapsed .brand svg,
+.sidebar.is-collapsed .nav__item svg,
+.sidebar.is-collapsed .proj-row svg {
+  color: var(--text-secondary);
+}
+
+.sidebar.is-collapsed .nav__item,
+.sidebar.is-collapsed .proj-row {
+  justify-content: center;
+  padding: 8px 0;
+}
+.sidebar.is-collapsed .nav__item svg {
+  margin-right: 0 !important;
+}
+
+.sidebar.is-collapsed span, .sidebar.is-collapsed h1, .sidebar.is-collapsed h2, .sidebar.is-collapsed p, .sidebar.is-collapsed small {
+  display: none !important;
+}
+
+/* Same for Rail */
+.rail.is-collapsed .panel__head h2,
+.rail.is-collapsed .panel__head span.pill,
+.rail.is-collapsed .panel__head button.link,
+.rail.is-collapsed .source-item span,
+.rail.is-collapsed .tool-item span,
+.rail.is-collapsed .source-item__menu-wrap,
+.rail.is-collapsed .tool-item__menu-wrap,
+.rail.is-collapsed p {
+  display: none !important;
+}
+
+.rail.is-collapsed .panel__head {
+  justify-content: center !important;
+}
+
+.rail.is-collapsed .source-item, .rail.is-collapsed .tool-item {
+  justify-content: center;
+  padding: 8px 0;
+}
+.rail.is-collapsed .source-item svg, .rail.is-collapsed .tool-item svg {
+  margin-right: 0 !important;
+}
+.sidebar.is-collapsed .brand__wordmark {
+  display: none !important;
+}
+.rail.is-collapsed .panel__head .btn {
+  display: none !important;
 }

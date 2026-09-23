@@ -384,10 +384,17 @@ def serve_document_file(doc_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Document not found")
     if not doc.file_path or not os.path.exists(doc.file_path):
         raise HTTPException(status_code=404, detail="File not found on disk")
+    
+    import mimetypes
+    media_type, _ = mimetypes.guess_type(doc.file_path)
+    if not media_type:
+        media_type = "application/pdf"
+        
     return FileResponse(
         path=doc.file_path,
-        media_type="application/pdf",
+        media_type=media_type,
         filename=doc.filename,
+        content_disposition_type="inline"
     )
 
 

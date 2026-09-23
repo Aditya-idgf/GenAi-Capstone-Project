@@ -20,8 +20,13 @@ export function Conversation() {
   return (
     <div className="conversation">
       {messages.length === 0 && (
-        <div className="conversation__empty">
-          <p>Ask anything about your uploaded documents.</p>
+        <div className="conversation__empty" style={{ margin: 'auto', paddingBottom: '40px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '8px' }}>
+            What can I help with?
+          </h2>
+          <p style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
+            Ask anything about your uploaded documents.
+          </p>
         </div>
       )}
       {messages.map((msg) =>

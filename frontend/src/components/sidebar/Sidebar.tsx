@@ -21,13 +21,9 @@ export function Sidebar() {
       <aside
         className={`sidebar${sidebarOpen ? ' is-open' : ''}${sidebarCollapsed ? ' is-collapsed' : ''}`}
       >
-        {!sidebarCollapsed && (
-          <>
-            <Brand />
-            <Navigation />
-            <ProjectList />
-          </>
-        )}
+        <Brand />
+        <Navigation />
+        <ProjectList />
         {/* Collapse button always at bottom */}
         <div className="sidebar__foot">
           {!sidebarCollapsed && <ProfileCard />}

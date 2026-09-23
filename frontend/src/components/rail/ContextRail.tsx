@@ -19,14 +19,11 @@ export function ContextRail() {
         />
       )}
       <aside className={`rail${railOpen ? ' is-open' : ''}${railCollapsed ? ' is-collapsed' : ''}`}>
-        {!railCollapsed && (
-          <>
-            <SourcesPanel />
-            <KnowledgeOverview />
-            <ToolsPanel />
-            <ToolHint />
-          </>
-        )}
+        <SourcesPanel />
+        <KnowledgeOverview />
+        <ToolsPanel />
+        <ToolHint />
+        
         {/* Collapse button always at bottom */}
         <div className="rail__collapse-btn-wrap">
           <button

@@ -1,4 +1,4 @@
-import { Eye, FileText, MoreVertical, Trash2 } from 'lucide-react'
+import { Eye, FileText, MoreVertical, Trash2, Upload, Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { deleteDocument, fetchDocuments, type ApiDocument } from '../../api'
 import { useWorkspace } from '../../state/WorkspaceContext'
@@ -92,10 +92,41 @@ export function SourcesPanel() {
     stats,
     setView,
     setSidebarOpen,
-    showToast
+    showToast,
+    uploadFile,
+    isUploading,
+    projects,
+    setActiveProject,
   } = useWorkspace()
 
   const [projectDocs, setProjectDocs] = useState<ApiDocument[]>([])
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleUploadClick = () => {
+    if (activeProjectId === null) {
+      if (projects.length > 0) {
+        setActiveProject(projects[0].id)
+        showToast(`Switched to project "${projects[0].name}". Click Upload again.`, 'info')
+      } else {
+        showToast('Please create a project first before uploading documents.', 'info')
+      }
+      return
+    }
+    if (fileRef.current) {
+      fileRef.current.value = ''
+      fileRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      await uploadFile(file)
+    } finally {
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
 
   // Load project documents whenever active project changes
   useEffect(() => {
@@ -129,29 +160,49 @@ export function SourcesPanel() {
 
   return (
     <section className="panel sources-panel">
-      <header className="panel__head">
+      <header className="panel__head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h2>{label}</h2>
           <span className="pill">{allSources.length}</span>
         </div>
-        {hasMore && (
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {hasMore && (
+            <button
+              className="link"
+              type="button"
+              onClick={() => {
+                setView('library')
+                setSidebarOpen(false)
+              }}
+            >
+              View all
+            </button>
+          )}
+          <input
+            ref={fileRef}
+            className="sr-only"
+            type="file"
+            accept=".pdf"
+            onChange={handleFileChange}
+            disabled={isUploading}
+          />
           <button
-            className="link"
+            className="btn btn--primary"
+            style={{ padding: '4px 8px', fontSize: '12px', height: '26px', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
             type="button"
-            onClick={() => {
-              setView('library')
-              setSidebarOpen(false)
-            }}
+            disabled={isUploading}
+            title={activeProjectId === null ? 'Select a project first' : 'Upload PDF to project'}
+            onClick={handleUploadClick}
           >
-            View all
+            {isUploading ? <Loader2 size={13} className="spin" /> : <Upload size={13} />}
           </button>
-        )}
+        </div>
       </header>
 
       {allSources.length === 0 ? (
         <p className="sources-panel__empty">{emptyMsg}</p>
       ) : (
-        <ul className="source-list">
+        <ul className="source-list" style={{ maxHeight: '180px', overflowY: 'auto' }}>
           {displaySources.map((source, i) => {
             const id = source.title
             const selected = selectedSourceIds.includes(id)
