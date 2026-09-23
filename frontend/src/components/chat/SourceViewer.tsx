@@ -15,6 +15,7 @@ export function SourceViewer() {
   } = useWorkspace()
 
   const [projectDocs, setProjectDocs] = useState<ApiDocument[]>([])
+  const [activePage, setActivePage] = useState<number>(1)
 
   useEffect(() => {
     if (activeProjectId === null) { setProjectDocs([]); return }
@@ -22,8 +23,6 @@ export function SourceViewer() {
       .then(setProjectDocs)
       .catch(() => setProjectDocs([]))
   }, [activeProjectId, stats])
-
-  if (openSourceIds.length === 0) return null
 
   // Build a de-duped map of source data by id (title)
   const sourceMap = new Map<string, { title: string; pages: number[]; excerpts: string[]; docInfo?: ApiDocument }>()
@@ -56,6 +55,18 @@ export function SourceViewer() {
   }
 
   const activeSource = activeSourceTabId ? (sourceMap.get(activeSourceTabId) ?? { title: activeSourceTabId, pages: [], excerpts: [] }) : null
+
+  // Auto-switch to cited page when opening or switching tabs
+  const citedPageKey = activeSource?.pages?.join(',')
+  useEffect(() => {
+    if (activeSource?.pages && activeSource.pages.length > 0) {
+      setActivePage(activeSource.pages[0])
+    } else {
+      setActivePage(1)
+    }
+  }, [activeSourceTabId, citedPageKey])
+
+  if (openSourceIds.length === 0) return null
 
   return (
     <div className="source-viewer">
@@ -90,56 +101,61 @@ export function SourceViewer() {
         })}
       </div>
 
-      {/* Content area */}
+      {/* Content area - no redundant top bar, maximum window space for the document */}
       <div className="source-viewer__body">
         {activeSource ? (
-          <>
-            <div className="source-viewer__meta">
-              <FileText size={14} strokeWidth={1.75} />
-              <strong>{activeSource.title}</strong>
-              {activeSource.pages.length > 0 && (
-                <span className="source-viewer__pages">
-                  {activeSource.pages.length === 1
-                    ? `Page ${activeSource.pages[0]}`
-                    : `Pages ${activeSource.pages.sort((a, b) => a - b).join(', ')}`}
-                </span>
-              )}
-              {activeSource.docInfo && activeSource.pages.length === 0 && (
-                <span className="source-viewer__pages">
-                  {activeSource.docInfo.pages} pages · {activeSource.docInfo.chunks} chunks
-                </span>
-              )}
-            </div>
-
-            <div className="source-viewer__excerpts" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              {activeSource.docInfo ? (
-                <iframe
-                  src={`/api/documents/${activeSource.docInfo.id}/file${
-                    activeSource.pages.length > 0 ? `#page=${activeSource.pages[0]}` : ''
-                  }`}
-                  style={{ flex: 1, width: '100%', border: 'none', borderRadius: '4px', backgroundColor: '#fff', minHeight: '400px' }}
-                  title={activeSource.title}
-                />
-              ) : activeSource.excerpts.length > 0 ? (
-                activeSource.excerpts.map((ex, i) => (
-                  <div key={i} className="source-viewer__excerpt">
-                    {activeSource.excerpts.length > 1 && (
-                      <p className="source-viewer__excerpt-label">Excerpt {i + 1}</p>
-                    )}
-                    <p>{ex}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="source-viewer__empty-state">
-                  <Info size={20} strokeWidth={1.7} style={{ color: 'var(--accent)', marginBottom: 8 }} />
-                  <p><strong>{activeSource.title}</strong> is attached to this project.</p>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-                    Ask a question in chat, and relevant excerpts matching your query will be extracted and displayed here with cited page numbers.
-                  </p>
+          activeSource.docInfo ? (
+            <div className="source-viewer__content">
+              {/* Slim page numbers strip on the left side of the window */}
+              {activeSource.docInfo.pages > 1 && (
+                <div className="pdf-page-strip" title="Jump to page">
+                  {Array.from({ length: activeSource.docInfo.pages }, (_, i) => i + 1).map((p) => {
+                    const isCited = activeSource.pages.includes(p)
+                    const isSelected = activePage === p
+                    return (
+                      <button
+                        key={p}
+                        className={`pdf-page-strip__btn${isSelected ? ' is-active' : ''}${isCited ? ' is-cited' : ''}`}
+                        type="button"
+                        title={`Page ${p}${isCited ? ' (Cited in answer)' : ''}`}
+                        onClick={() => setActivePage(p)}
+                      >
+                        {p}
+                        {isCited && <span className="pdf-page-strip__dot" />}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
+
+              {/* Full-width PDF with navpanes=0, pagemode=none, and view=FitH */}
+              <iframe
+                key={`${activeSource.docInfo.id}-${activePage}`}
+                src={`/api/documents/${activeSource.docInfo.id}/file#page=${activePage}&navpanes=0&pagemode=none&view=FitH`}
+                className="pdf-iframe"
+                title={activeSource.title}
+              />
             </div>
-          </>
+          ) : activeSource.excerpts.length > 0 ? (
+            <div className="source-viewer__excerpts">
+              {activeSource.excerpts.map((ex, i) => (
+                <div key={i} className="source-viewer__excerpt">
+                  {activeSource.excerpts.length > 1 && (
+                    <p className="source-viewer__excerpt-label">Excerpt {i + 1}</p>
+                  )}
+                  <p>{ex}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="source-viewer__empty-state">
+              <Info size={20} strokeWidth={1.7} style={{ color: 'var(--accent)', marginBottom: 8 }} />
+              <p><strong>{activeSource.title}</strong> is attached to this project.</p>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+                Ask a question in chat, and relevant excerpts matching your query will be extracted and displayed here with cited page numbers.
+              </p>
+            </div>
+          )
         ) : (
           <p className="source-viewer__empty">Select a tab to view source content.</p>
         )}
