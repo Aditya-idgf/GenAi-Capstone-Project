@@ -2724,64 +2724,105 @@ kbd {
   color: var(--text-primary);
 }
 
-/* Collapsed sidebar/rail icon visibility overrides */
-.sidebar.is-collapsed .brand h1,
-.sidebar.is-collapsed .nav__label,
-.sidebar.is-collapsed .proj-list__head,
-.sidebar.is-collapsed .nav__item text,
-.sidebar.is-collapsed .proj-row span,
-.sidebar.is-collapsed .proj-row button.icon-btn,
-.sidebar.is-collapsed .nav__item {
-  color: transparent !important;
+/* ─── Collapsed Sidebars ────────────────────────────────────────── */
+.sidebar.is-collapsed,
+.rail.is-collapsed {
+  padding: 12px 6px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
 }
 
-.sidebar.is-collapsed .brand svg,
-.sidebar.is-collapsed .nav__item svg,
-.sidebar.is-collapsed .proj-row svg {
+.sidebar-collapsed,
+.rail-collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.sidebar-collapsed__icon-btn,
+.rail-collapsed__icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-secondary);
-}
-
-.sidebar.is-collapsed .nav__item,
-.sidebar.is-collapsed .proj-row {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 8px 0;
-}
-.sidebar.is-collapsed .nav__item svg {
-  margin-right: 0 !important;
-}
-
-.sidebar.is-collapsed span, .sidebar.is-collapsed h1, .sidebar.is-collapsed h2, .sidebar.is-collapsed p, .sidebar.is-collapsed small {
-  display: none !important;
+  cursor: pointer;
+  position: relative;
+  transition: all 150ms ease;
+  padding: 0;
+  flex-shrink: 0;
 }
 
-/* Same for Rail */
-.rail.is-collapsed .panel__head h2,
-.rail.is-collapsed .panel__head span.pill,
-.rail.is-collapsed .panel__head button.link,
-.rail.is-collapsed .source-item span,
-.rail.is-collapsed .tool-item span,
-.rail.is-collapsed .source-item__menu-wrap,
-.rail.is-collapsed .tool-item__menu-wrap,
-.rail.is-collapsed p {
-  display: none !important;
+.sidebar-collapsed__icon-btn svg,
+.rail-collapsed__icon-btn svg {
+  display: block;
+  flex-shrink: 0;
 }
 
-.rail.is-collapsed .panel__head {
-  justify-content: center !important;
+.sidebar-collapsed__icon-btn:hover,
+.rail-collapsed__icon-btn:hover {
+  background: var(--card-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text-primary);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.1));
 }
 
-.rail.is-collapsed .source-item, .rail.is-collapsed .tool-item {
-  justify-content: center;
-  padding: 8px 0;
+.sidebar-collapsed__icon-btn.is-active,
+.rail-collapsed__icon-btn.is-active {
+  background: var(--accent-subtle, rgba(59, 130, 246, 0.15));
+  color: var(--accent, #3b82f6);
+  border-color: var(--accent, #3b82f6);
 }
-.rail.is-collapsed .source-item svg, .rail.is-collapsed .tool-item svg {
-  margin-right: 0 !important;
+
+.sidebar-collapsed__icon-btn.new-chat-btn {
+  background: var(--accent, #3b82f6);
+  color: #ffffff;
+  border-color: var(--accent, #3b82f6);
 }
-.sidebar.is-collapsed .brand__wordmark {
-  display: none !important;
+
+.sidebar-collapsed__icon-btn.new-chat-btn:hover {
+  filter: brightness(1.12);
 }
-.rail.is-collapsed .panel__head .btn {
-  display: none !important;
+
+.sidebar-collapsed__divider,
+.rail-collapsed__divider {
+  width: 24px;
+  height: 1px;
+  background: var(--border-subtle, rgba(255, 255, 255, 0.1));
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
+.sidebar-collapsed__projects {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.rail-collapsed__badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background: var(--accent, #3b82f6);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 4px;
+  line-height: 1;
 }
 
 /* Tight empty chat layout */

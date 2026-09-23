@@ -20,7 +20,7 @@ export function AppShell() {
   const [splitPercent, setSplitPercent] = useState(55) // chat takes 55% by default
   const [isDragging, setIsDragging] = useState(false)
 
-  const gridCols = `${sidebarCollapsed ? '48px' : 'var(--sidebar-w)'} minmax(0,1fr) ${railCollapsed ? '48px' : 'var(--rail-w)'}`
+  const gridCols = `${sidebarCollapsed ? '52px' : 'var(--sidebar-w)'} minmax(0,1fr) ${railCollapsed ? '52px' : 'var(--rail-w)'}`
 
   const startDrag = (e: React.MouseEvent) => {
     e.preventDefault()
