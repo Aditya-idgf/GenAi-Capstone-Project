@@ -2149,20 +2149,30 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px 8px;
+  padding: 0 6px 8px;
   flex-shrink: 0;
 }
 
 .proj-list__add {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 22px;
   height: 22px;
+  padding: 0 !important;
+  margin: 0;
   border: 1px solid var(--border);
   border-radius: 5px;
   background: transparent;
   color: var(--text-muted);
-  transition: background 150ms ease-out, color 150ms ease-out;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.proj-list__add svg {
+  display: block;
+  margin: auto;
 }
 
 .proj-list__add:hover {

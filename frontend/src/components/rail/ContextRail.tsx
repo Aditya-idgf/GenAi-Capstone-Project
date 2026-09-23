@@ -3,10 +3,13 @@ import {
   BookOpen,
   FileText,
   GitBranch,
+  Loader2,
   PanelRightClose,
   PanelRightOpen,
   Sparkles,
+  Upload,
 } from 'lucide-react'
+import { useRef } from 'react'
 import { KnowledgeOverview } from '../sidebar/KnowledgeOverview'
 import { SourcesPanel } from './SourcesPanel'
 import { ToolHint } from './ToolHint'
@@ -21,9 +24,42 @@ export function ContextRail() {
     setRailCollapsed,
     openTool,
     stats,
+    uploadFile,
+    isUploading,
+    activeProjectId,
+    projects,
+    setActiveProject,
+    showToast,
   } = useWorkspace()
 
   const docCount = stats?.documents ?? 0
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleUploadClick = () => {
+    if (activeProjectId === null) {
+      if (projects.length > 0) {
+        setActiveProject(projects[0].id)
+        showToast(`Switched to project "${projects[0].name}". Click Upload again.`, 'info')
+      } else {
+        showToast('Please create a project first before uploading documents.', 'info')
+      }
+      return
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      await uploadFile(file)
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   return (
     <>
@@ -38,6 +74,37 @@ export function ContextRail() {
       <aside className={`rail${railOpen ? ' is-open' : ''}${railCollapsed ? ' is-collapsed' : ''}`}>
         {railCollapsed ? (
           <div className="rail-collapsed">
+            {/* Hidden file input for uploading from collapsed rail */}
+            <input
+              ref={fileInputRef}
+              className="sr-only"
+              type="file"
+              accept=".pdf"
+              disabled={isUploading}
+              onChange={handleFileChange}
+            />
+
+            {/* Upload Button at the very top */}
+            <button
+              className="rail-collapsed__icon-btn"
+              type="button"
+              title={activeProjectId === null ? 'Select a project first to upload' : 'Upload Document'}
+              disabled={isUploading}
+              onClick={handleUploadClick}
+              style={{
+                background: 'var(--accent, #3b82f6)',
+                color: '#ffffff',
+                borderColor: 'var(--accent, #3b82f6)',
+                marginBottom: '2px',
+              }}
+            >
+              {isUploading ? (
+                <Loader2 size={16} strokeWidth={2} className="spin" />
+              ) : (
+                <Upload size={17} strokeWidth={2} />
+              )}
+            </button>
+
             {/* Documents Button */}
             <button
               className="rail-collapsed__icon-btn"

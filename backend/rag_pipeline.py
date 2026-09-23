@@ -116,7 +116,8 @@ def get_rag_chain(project_id: int = None, k: int = 4, filenames: list[str] = Non
          "2. Answer questions comprehensively and format your output beautifully (use markdown, bolding, bullet points, etc.).\n"
          "3. If the user's question relates to the documents, use the context extensively to form your answer.\n"
          "4. If the user's question is completely unrelated to the documents or context is empty, you MAY use your general knowledge, but politely mention that the answer is not drawn from the uploaded sources.\n"
-         "5. Always aim to be helpful, accurate, and structured in your response.\n\n"
+         "5. Always aim to be helpful, accurate, and structured in your response.\n"
+         "6. When presenting mathematical formulas or equations, ALWAYS format them using proper LaTeX syntax enclosed in double dollar signs ($$...$$) for standalone block equations, or single dollar signs ($...$) for inline math. Never use raw square brackets without dollar delimiters.\n\n"
          "Context from currently selected documents:\n{context}"),
         MessagesPlaceholder("chat_history"),
         ("human", "{input}"),
