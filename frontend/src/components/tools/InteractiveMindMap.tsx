@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
+﻿import { useEffect, useRef, useState, useMemo } from 'react'
 import cytoscape, { type Core } from 'cytoscape'
 import {
   Maximize2,
@@ -193,7 +193,7 @@ export function InteractiveMindMap() {
     const cy = cytoscape({
       container: containerRef.current,
       elements,
-      wheelSensitivity: 0.35,
+      wheelSensitivity: 0.2,
       boxSelectionEnabled: false,
       autounselectify: false,
       style: [
@@ -596,7 +596,7 @@ export function InteractiveMindMap() {
               </span>
             </div>
             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {data ? `${data.nodes.length} Nodes • ${data.edges.length} Relationships` : 'Extracting concepts…'}
+              {data ? `${data.nodes.length} Nodes â€¢ ${data.edges.length} Relationships` : 'Extracting conceptsâ€¦'}
             </span>
           </div>
         </div>
@@ -658,7 +658,7 @@ export function InteractiveMindMap() {
             <Search size={13} color="#94a3b8" />
             <input
               type="text"
-              placeholder="Find concept…"
+              placeholder="Find conceptâ€¦"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -702,7 +702,7 @@ export function InteractiveMindMap() {
           >
             <Loader2 size={34} className="spin" color="#38bdf8" />
             <p style={{ margin: 0, fontSize: '13.5px', color: '#94a3b8' }}>
-              Building Graphify Knowledge Network…
+              Building Graphify Knowledge Networkâ€¦
             </p>
           </div>
         )}
