@@ -18,11 +18,11 @@ export function Conversation() {
   }, [messages])
 
   return (
-    <div className="conversation-scroll-wrapper" style={{ flex: 1, minHeight: 0, overflowY: 'auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="conversation-scroll-wrapper" style={{ flex: messages.length === 0 ? '0 0 auto' : 1, minHeight: 0, overflowY: 'auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="conversation" style={{ width: '100%', maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '2px', padding: '1px 4px', overflowY: 'visible' }}>
         {messages.length === 0 && (
           <div className="conversation__empty" style={{ margin: '0 0 16px 0', padding: 0 }}>
-            <h2 style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>
+            <h2 style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text-primary)', margin: 0, textAlign: 'center' }}>
               What can I help with?
             </h2>
           </div>

@@ -1,4 +1,4 @@
-/* ─── Design tokens ─────────────────────────────────────────────────────── */
+﻿/* â”€â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --bg-app:          #0d1117;
   --bg-main:         #0b0f15;
@@ -52,7 +52,7 @@
   --shadow:         0 4px 20px rgba(16,18,22,0.06);
 }
 
-/* ─── Reset ──────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root {
@@ -72,13 +72,13 @@ button, input, textarea, select { font-family: inherit; }
 button { cursor: pointer; }
 p, h1, h2, h3, h4, dl, ul, ol { margin: 0; }
 
-/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #2a2f38; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #383e49; }
 
-/* ─── Utilities ──────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -88,7 +88,7 @@ p, h1, h2, h3, h4, dl, ul, ol { margin: 0; }
   border: 0;
 }
 
-/* ─── App shell ──────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ App shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .shell {
   display: grid;
   grid-template-columns: var(--sidebar-w) minmax(0,1fr) var(--rail-w);
@@ -97,7 +97,7 @@ p, h1, h2, h3, h4, dl, ul, ol { margin: 0; }
   overflow: hidden;
 }
 
-/* ─── Sidebar ────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -372,7 +372,7 @@ p, h1, h2, h3, h4, dl, ul, ol { margin: 0; }
   color: var(--text-muted);
 }
 
-/* ─── Main workspace ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Main workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .workspace {
   display: flex;
   flex-direction: column;
@@ -453,7 +453,7 @@ p, h1, h2, h3, h4, dl, ul, ol { margin: 0; }
   border-color: var(--danger);
 }
 
-/* Upload button in topbar — uses platform colour */
+/* Upload button in topbar â€” uses platform colour */
 .topbar__upload-btn {
   display: inline-flex;
   align-items: center;
@@ -544,7 +544,7 @@ kbd {
 .icon-btn--mobile { display: none; }
 .tools-wrap { position: relative; }
 
-/* ─── Chat workspace ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Chat workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .workspace__chat {
   display: flex;
   flex-direction: column;
@@ -576,7 +576,7 @@ kbd {
   align-items: center;
 }
 
-.workspace__chat-pane.is-empty .conversation {
+.workspace__chat-pane.is-empty .conversation, .workspace__chat-pane.is-empty .conversation-scroll-wrapper {
   flex: 0 0 auto;
   width: 100%;
   max-width: 768px;
@@ -610,7 +610,7 @@ kbd {
   overflow: hidden;
 }
 
-/* ─── Source Viewer (split pane tabs) ────────────────────────────────────── */
+/* â”€â”€â”€ Source Viewer (split pane tabs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .source-viewer {
   display: flex;
   flex-direction: column;
@@ -836,7 +836,7 @@ kbd {
   margin: 0 auto;
 }
 
-/* ─── Card base ──────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Card base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .q-card,
 .a-card,
 .composer,
@@ -846,7 +846,7 @@ kbd {
   border: 1px solid #2a2f38;
 }
 
-/* ─── User question card ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ User question card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Right-aligned bubble, no avatar, distinct background */
 .q-row {
   display: flex;
@@ -861,7 +861,7 @@ kbd {
   gap: 5px;
   padding: 12px 16px;
   border-radius: var(--radius-lg);
-  /* distinct user-bubble color — slightly lighter/warmer than card-bg */
+  /* distinct user-bubble color â€” slightly lighter/warmer than card-bg */
   background: #1c2130;
   border: 1px solid #2e3545;
 }
@@ -884,7 +884,7 @@ kbd {
 
 .q-card__meta svg { color: var(--accent); }
 
-/* ─── Assistant response card ────────────────────────────────────────────── */
+/* â”€â”€â”€ Assistant response card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .a-card {
   padding: 22px 26px 16px;
   border-radius: var(--radius-xl);
@@ -996,7 +996,7 @@ kbd {
   color: var(--text-secondary);
 }
 
-/* ─── Tool workspace sheet ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Tool workspace sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sheet {
   padding: 22px 24px;
   border-radius: var(--radius-lg);
@@ -1026,7 +1026,7 @@ kbd {
 
 [data-theme='light'] .sheet__body { color: var(--text-secondary); }
 
-/* ─── Message composer ───────────────────────────────────────────────────── */
+/* â”€â”€â”€ Message composer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .composer {
   margin: 12px auto 0;
   width: 100%;
@@ -1037,7 +1037,7 @@ kbd {
   flex-direction: column;
   flex-shrink: 0;
   border-color: var(--composer-border);
-  /* no fixed min-height — height is driven by textarea */
+  /* no fixed min-height â€” height is driven by textarea */
 }
 
 .composer textarea {
@@ -1165,7 +1165,7 @@ kbd {
 
 .send-btn:hover { background: var(--accent-bright); }
 
-/* ─── Right context rail ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ Right context rail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rail {
   display: flex;
   flex-direction: column;
@@ -1199,7 +1199,7 @@ kbd {
   justify-content: center;
 }
 
-/* Collapse button wraps — both live at the bottom of their respective panel */
+/* Collapse button wraps â€” both live at the bottom of their respective panel */
 .sidebar__collapse-btn-wrap {
   display: flex;
   justify-content: flex-start;
@@ -1287,7 +1287,7 @@ kbd {
 
 .link:hover { color: var(--accent-bright); }
 
-/* ─── Sources panel ──────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Sources panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .source-list {
   list-style: none;
   padding: 0;
@@ -1338,7 +1338,7 @@ kbd {
 }
 
 .source-item em {
-  /* number badge — inherits from shared rule */
+  /* number badge â€” inherits from shared rule */
   margin-top: 1px;
 }
 
@@ -1391,7 +1391,7 @@ kbd {
 .pdf-glyph--teal   { color: #5ea8a0; background: #1b2626; }
 .pdf-glyph--gray   { color: #8e96a3; background: #242830; }
 
-/* ─── Tools panel ────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Tools panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tools-panel { }
 
 .tools-grid {
@@ -1431,7 +1431,7 @@ kbd {
   background: var(--nav-active);
 }
 
-/* ─── Tool hint card ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Tool hint card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hint {
   display: flex;
   align-items: flex-start;
@@ -1468,7 +1468,7 @@ kbd {
 
 .hint button:hover { color: var(--text-secondary); }
 
-/* ─── Source preview / tool workspace ───────────────────────────────────── */
+/* â”€â”€â”€ Source preview / tool workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sheet header > div { min-width: 0; flex: 1; }
 
 .eyebrow {
@@ -1486,7 +1486,7 @@ kbd {
   line-height: 1.5;
 }
 
-/* ─── Dropdown menus ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Dropdown menus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -1527,7 +1527,7 @@ kbd {
   bottom: calc(100% + 6px);
 }
 
-/* Source filter select — clear button */
+/* Source filter select â€” clear button */
 .source-filter__clear {
   display: flex;
   align-items: center;
@@ -1588,7 +1588,7 @@ kbd {
   color: var(--text-muted);
 }
 
-/* ─── Search modal ───────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Search modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .modal-root {
   position: fixed;
   inset: 0;
@@ -1677,7 +1677,7 @@ kbd {
   font-size: 13px;
 }
 
-/* ─── Library view ───────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Library view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .page { overflow: auto; }
 
 .page__head {
@@ -1809,7 +1809,7 @@ kbd {
 
 .settings h3 { margin-bottom: 8px; font-size: 15px; }
 
-/* ─── Tool workspace sub-components ─────────────────────────────────────── */
+/* â”€â”€â”€ Tool workspace sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .seg {
   display: flex;
   gap: 8px;
@@ -1903,7 +1903,7 @@ kbd {
   border-left: 1px solid var(--border);
 }
 
-/* ─── Responsive ─────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 1279px) {
   .shell {
     grid-template-columns: var(--sidebar-w) minmax(0,1fr) 300px;
@@ -1959,7 +1959,7 @@ kbd {
   .workspace__page { padding: 16px 16px 14px; }
 }
 
-/* ─── Loading dots (assistant thinking) ─────────────────────────────────────── */
+/* â”€â”€â”€ Loading dots (assistant thinking) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .a-card__loading {
   display: flex;
   gap: 6px;
@@ -1983,14 +1983,14 @@ kbd {
   40%            { opacity: 1;    transform: scale(1);   }
 }
 
-/* ─── Spin (upload button) ──────────────────────────────────────────────────── */
+/* â”€â”€â”€ Spin (upload button) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
 .spin { animation: spin 0.8s linear infinite; }
 
-/* ─── Disabled states ────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Disabled states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .upload-btn:disabled  { opacity: 0.65; cursor: not-allowed; }
 .send-btn:disabled    { opacity: 0.5;  cursor: not-allowed; }
 .composer__attach.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
@@ -2023,7 +2023,7 @@ kbd {
   max-width: 400px;
 }
 
-/* ─── Sources empty state ───────────────────────────────────────────────────── */
+/* â”€â”€â”€ Sources empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sources-panel__empty {
   font-size: 12.5px;
   color: var(--text-muted);
@@ -2031,13 +2031,13 @@ kbd {
   padding: 2px 2px 4px;
 }
 
-/* ─── A-card body paragraphs ────────────────────────────────────────────────── */
+/* â”€â”€â”€ A-card body paragraphs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .a-card__body { display: flex; flex-direction: column; gap: 10px; }
 .a-card__para { font-size: 15.5px; line-height: 1.7; color: #e7e8eb; font-weight: 400; }
 
 [data-theme='light'] .a-card__para { color: var(--text-secondary); }
 
-/* ─── Markdown body (react-markdown output) ─────────────────────────────────── */
+/* â”€â”€â”€ Markdown body (react-markdown output) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .markdown-body { font-size: 15px; line-height: 1.75; color: #e7e8eb; }
 [data-theme='light'] .markdown-body { color: var(--text-secondary); }
 
@@ -2131,10 +2131,10 @@ kbd {
 [data-theme='light'] .markdown-body tr:nth-child(even) { background: #f7f8fa; }
 
 
-/* ─── Library table extra delete column ─────────────────────────────────────── */
+/* â”€â”€â”€ Library table extra delete column â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .table__row { grid-template-columns: 2fr 1fr 0.5fr 0.6fr 0.6fr 36px; }
 
-/* ─── Project list (sidebar) ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ Project list (sidebar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .proj-list {
   display: flex;
   flex-direction: column;
@@ -2193,12 +2193,12 @@ kbd {
   line-height: 1.5;
 }
 
-/* ── Project group ── */
+/* â”€â”€ Project group â”€â”€ */
 .proj-group {
   margin-bottom: 2px;
 }
 
-/* ── Project row ── */
+/* â”€â”€ Project row â”€â”€ */
 .proj-row {
   display: flex;
   align-items: center;
@@ -2266,7 +2266,7 @@ kbd {
 
 .proj-row__more:hover { background: var(--card-hover); }
 
-/* ── Project context menu ── */
+/* â”€â”€ Project context menu â”€â”€ */
 .proj-menu {
   min-width: 160px;
   right: 0;
@@ -2288,7 +2288,7 @@ kbd {
   color: var(--danger);
 }
 
-/* ── Chat list ── */
+/* â”€â”€ Chat list â”€â”€ */
 .proj-chats {
   padding-left: 20px;
   border-left: 1px solid var(--border-subtle);
@@ -2362,7 +2362,7 @@ kbd {
   color: var(--danger);
 }
 
-/* ── + New Chat button ── */
+/* â”€â”€ + New Chat button â”€â”€ */
 .proj-new-chat {
   display: flex;
   align-items: center;
@@ -2381,7 +2381,7 @@ kbd {
 
 .proj-new-chat:hover { background: var(--card-hover); }
 
-/* ── Inline rename input ── */
+/* â”€â”€ Inline rename input â”€â”€ */
 .proj-inline-input {
   flex: 1;
   border: 1px solid var(--accent-dark);
@@ -2394,7 +2394,7 @@ kbd {
   height: 24px;
 }
 
-/* ── New project modal ── */
+/* â”€â”€ New project modal â”€â”€ */
 .new-proj-modal {
   position: relative;
   z-index: 50;
@@ -2434,17 +2434,17 @@ kbd {
   gap: 8px;
 }
 
-/* ── Library table for project scope (4 data cols + delete) ── */
+/* â”€â”€ Library table for project scope (4 data cols + delete) â”€â”€ */
 .table__row--lib {
   grid-template-columns: 2fr 0.6fr 0.7fr 0.7fr 36px !important;
 }
 
-/* ── Rail overview compact ── */
+/* â”€â”€ Rail overview compact â”€â”€ */
 .rail .overview {
   flex-shrink: 0;
 }
 
-/* ─── Document list (sidebar) ──────────────────────────────────────────────── */
+/* â”€â”€â”€ Document list (sidebar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .doc-list {
   display: flex;
   flex-direction: column;
@@ -2497,7 +2497,7 @@ kbd {
   line-height: 1.5;
 }
 
-/* ── Document row ── */
+/* â”€â”€ Document row â”€â”€ */
 .doc-row {
   display: flex;
   align-items: center;
@@ -2577,7 +2577,7 @@ kbd {
   color: var(--accent);
 }
 
-/* ─── Confirmation modal ────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Confirmation modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .confirm-modal {
   position: relative;
   z-index: 1002;
@@ -2635,7 +2635,7 @@ kbd {
   min-width: 120px;
 }
 
-/* ─── Document preview (rail) ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Document preview (rail) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .doc-preview-sheet {
   display: flex;
   flex-direction: column;
@@ -2658,7 +2658,7 @@ kbd {
   border-radius: var(--radius-md);
 }
 
-/* ─── Document context bar (above composer) ────────────────────────────────── */
+/* â”€â”€â”€ Document context bar (above composer) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .doc-context {
   display: flex;
   align-items: center;
@@ -2727,7 +2727,7 @@ kbd {
   color: var(--text-primary);
 }
 
-/* ─── Toast notifications ───────────────────────────────────────────────────── */
+/* â”€â”€â”€ Toast notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -2816,7 +2816,7 @@ kbd {
   color: var(--text-primary);
 }
 
-/* ─── Collapsed Sidebars ────────────────────────────────────────── */
+/* â”€â”€â”€ Collapsed Sidebars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sidebar.is-collapsed,
 .rail.is-collapsed {
   padding: 12px 6px !important;
@@ -2918,7 +2918,7 @@ kbd {
 }
 
 /* Tight empty chat layout */
-.workspace__chat-pane.is-empty .conversation {
+.workspace__chat-pane.is-empty .conversation, .workspace__chat-pane.is-empty .conversation-scroll-wrapper {
   padding: 0 !important;
   margin: 0 !important;
 }
