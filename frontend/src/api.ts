@@ -1,4 +1,4 @@
-const BASE = '/api'
+﻿const BASE = '/api'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, init)
@@ -9,7 +9,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>
 }
 
-// ── Shared types ──────────────────────────────────────────────────────────────
+// â”€â”€ Shared types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface ApiSource {
   number: number
@@ -74,7 +74,7 @@ export interface ApiChatSession {
   created_at: string
 }
 
-// ── Projects ──────────────────────────────────────────────────────────────────
+// â”€â”€ Projects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fetchProjects(): Promise<ApiProject[]> {
   return request('/projects')
@@ -100,7 +100,7 @@ export function deleteProject(id: number): Promise<void> {
   return request(`/projects/${id}`, { method: 'DELETE' })
 }
 
-// ── Chat sessions ─────────────────────────────────────────────────────────────
+// â”€â”€ Chat sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fetchSessions(projectId: number): Promise<ApiChatSession[]> {
   return request(`/projects/${projectId}/sessions`)
@@ -122,7 +122,7 @@ export function fetchHistory(sessionId: string): Promise<ApiMessage[]> {
   return request(`/history/${encodeURIComponent(sessionId)}`)
 }
 
-// ── Query ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Query â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function sendQuery(payload: {
   session_id: string
@@ -138,7 +138,7 @@ export function sendQuery(payload: {
   })
 }
 
-// ── Documents ─────────────────────────────────────────────────────────────────
+// â”€â”€ Documents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function uploadDocument(projectId: number, file: File): Promise<ApiDocument> {
   const form = new FormData()
@@ -154,7 +154,7 @@ export function deleteDocument(id: number): Promise<void> {
   return request(`/documents/${id}`, { method: 'DELETE' })
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fetchProjectStats(projectId: number): Promise<KnowledgeStats> {
   return request(`/projects/${projectId}/stats`)
@@ -164,20 +164,20 @@ export function fetchStats(): Promise<KnowledgeStats> {
   return request('/stats')
 }
 
-// ── Collections ───────────────────────────────────────────────────────────────
+// â”€â”€ Collections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function fetchCollections(): Promise<ApiCollection[]> {
   return request('/collections')
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function parseSources(sourcesJson: string | null): ApiSource[] {
   if (!sourcesJson) return []
   try { return JSON.parse(sourcesJson) as ApiSource[] } catch { return [] }
 }
 
-// ── Tools ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tools â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface MindMapNode {
   id: string
@@ -211,7 +211,7 @@ export function fetchMindMap(payload: {
   })
 }
 
-// ── Compare Tool API ─────────────────────────────────────────────────────────
+// â”€â”€ Compare Tool API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface CompareMatrixRow {
   dimension: string
@@ -244,7 +244,7 @@ export function compareDocuments(payload: {
   })
 }
 
-// ── Translate Tool API ───────────────────────────────────────────────────────
+// â”€â”€ Translate Tool API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface GlossaryItem {
   source_term: string
@@ -270,7 +270,8 @@ export function translateText(payload: {
     body: JSON.stringify(payload),
   })
 }
-\n
+
+
 export interface KeyPointsRequest {
   project_id: number;
   text?: string;
@@ -282,7 +283,7 @@ export interface KeyPointsResponse {
 }
 
 export async function extractKeyPoints(req: KeyPointsRequest): Promise<KeyPointsResponse> {
-  const res = await fetch(${API_URL}/tools/keypoints, {
+  const res = await fetch(`${API_URL}/tools/keypoints`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
