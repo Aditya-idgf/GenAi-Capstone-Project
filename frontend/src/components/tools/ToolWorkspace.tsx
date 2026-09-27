@@ -1,8 +1,10 @@
 import { X } from 'lucide-react'
-import { LANGUAGES, PRINCIPLES } from '../../data'
+import { PRINCIPLES } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
 import type { ToolId } from '../../types'
+import { CompareView } from './CompareView'
 import { InteractiveMindMap } from './InteractiveMindMap'
+import { TranslateView } from './TranslateView'
 
 const TITLES: Record<ToolId, string> = {
   summarize: 'Summarize',
@@ -45,23 +47,6 @@ function KeyPoints() {
   )
 }
 
-function Compare({ excerpts }: { excerpts: string[] }) {
-  const pair = excerpts.slice(0, 2)
-  if (pair.length < 2) {
-    return <p>Select at least two sources to compare.</p>
-  }
-  return (
-    <div className="compare">
-      {pair.map((excerpt, i) => (
-        <article key={i}>
-          <h4>Source {i + 1}</h4>
-          <p>{excerpt}</p>
-        </article>
-      ))}
-    </div>
-  )
-}
-
 function Explain() {
   const { explainLevel, setExplainLevel } = useWorkspace()
   const copy = {
@@ -87,36 +72,6 @@ function Explain() {
         ))}
       </div>
       <p>{copy[explainLevel]}</p>
-    </div>
-  )
-}
-
-function Translate({ text }: { text: string }) {
-  const { translateLang, setTranslateLang } = useWorkspace()
-  const samples: Record<string, string> = {
-    English: text,
-    Hindi:
-      'RAG पहले प्रासंगिक दस्तावेज़ अंश खोजता है, फिर उसी साक्ष्य के आधार पर उत्तर लिखता है।',
-    Marathi:
-      'RAG आधी संबंधित दस्तऐवज शोधते आणि नंतर त्या पुराव्यावर आधारित उत्तर तयार करते.',
-    Spanish:
-      'RAG recupera pasajes relevantes y genera la respuesta a partir de esa evidencia.',
-    French:
-      "RAG récupère d'abord les passages utiles, puis rédige la réponse à partir de ces preuves.",
-    German:
-      'RAG sucht zuerst passende Textstellen und erzeugt die Antwort aus diesem Belegkontext.',
-  }
-  return (
-    <div>
-      <label className="field">
-        <span>Language</span>
-        <select value={translateLang} onChange={(e) => setTranslateLang(e.target.value)}>
-          {LANGUAGES.map((lang) => (
-            <option key={lang}>{lang}</option>
-          ))}
-        </select>
-      </label>
-      <p>{samples[translateLang] ?? samples.English}</p>
     </div>
   )
 }
@@ -153,9 +108,9 @@ export function ToolWorkspace() {
       <div className="sheet__body">
         {activeTool === 'summarize' && <Summary text={text} />}
         {activeTool === 'keypoints' && <KeyPoints />}
-        {activeTool === 'compare'   && <Compare excerpts={selectedExcerpts} />}
+        {activeTool === 'compare'   && <CompareView />}
         {activeTool === 'explain'   && <Explain />}
-        {activeTool === 'translate' && <Translate text={text} />}
+        {activeTool === 'translate' && <TranslateView initialText={text} />}
         {activeTool === 'mindmap'   && <InteractiveMindMap />}
       </div>
     </div>

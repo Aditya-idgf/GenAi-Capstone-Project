@@ -28,9 +28,7 @@ export function ToolsPanel() {
   const handleToolClick = (toolId: ToolId) => {
     if (isQuerying) return
 
-    if (toolId === 'mindmap') {
-      sendMessage("Create a detailed mind map of the selected sources using Mermaid syntax. Ensure it has a clear central topic, hierarchical nodes, and concise labels. Output the mind map inside a ```mermaid code block.")
-    } else if (toolId === 'summarize') {
+    if (toolId === 'summarize') {
       sendMessage("Provide a comprehensive summary of the selected sources. Use clear headings and well-structured paragraphs.")
     } else if (toolId === 'keypoints') {
       sendMessage("Extract the key points from the selected sources. Present them as a concise bulleted list.")

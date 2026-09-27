@@ -210,3 +210,63 @@ export function fetchMindMap(payload: {
     body: JSON.stringify(payload),
   })
 }
+
+// ── Compare Tool API ─────────────────────────────────────────────────────────
+
+export interface CompareMatrixRow {
+  dimension: string
+  doc_a_value: string
+  doc_b_value: string
+  takeaway: string
+}
+
+export interface CompareResponse {
+  executive_summary: string
+  doc_a_name: string
+  doc_b_name: string
+  matrix: CompareMatrixRow[]
+  agreements: string[]
+  divergences: string[]
+}
+
+export function compareDocuments(payload: {
+  project_id: number
+  doc_a: string
+  doc_b: string
+  focus?: string
+  excerpts_a?: string[]
+  excerpts_b?: string[]
+}): Promise<CompareResponse> {
+  return request('/tools/compare', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+// ── Translate Tool API ───────────────────────────────────────────────────────
+
+export interface GlossaryItem {
+  source_term: string
+  translated_term: string
+  explanation: string
+}
+
+export interface TranslateResponse {
+  translated_text: string
+  source_language: string
+  target_language: string
+  glossary: GlossaryItem[]
+}
+
+export function translateText(payload: {
+  text: string
+  target_language?: string
+  preserve_technical_terms?: boolean
+}): Promise<TranslateResponse> {
+  return request('/tools/translate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
