@@ -45,44 +45,43 @@ export function AppShell() {
     <div className="shell" style={{ gridTemplateColumns: gridCols }}>
       <Sidebar />
       <main className="workspace">
-        {view === 'chat' ? (
+        <div
+          className={`workspace__chat${splitActive ? ' is-split' : ''}`}
+          ref={containerRef}
+          style={{ display: view === 'chat' ? 'flex' : 'none' }}
+        >
+          {/* Left: chat area */}
           <div
-            className={`workspace__chat${splitActive ? ' is-split' : ''}`}
-            ref={containerRef}
+            className={`workspace__chat-pane${messages.length === 0 ? ' is-empty' : ''}`}
+            style={splitActive ? { width: `${splitPercent}%` } : undefined}
           >
-            {/* Left: chat area */}
-            <div
-              className={`workspace__chat-pane${messages.length === 0 ? ' is-empty' : ''}`}
-              style={splitActive ? { width: `${splitPercent}%` } : undefined}
-            >
-              <Conversation />
-              <MessageComposer />
-            </div>
+            <Conversation />
+            <MessageComposer />
+          </div>
 
-            {/* Drag handle + right source pane */}
-            {splitActive && (
-              <>
-                <div
-                  className={`workspace__split-handle${isDragging ? ' is-dragging' : ''}`}
-                  onMouseDown={startDrag}
-                  title="Drag to resize"
-                />
-                <div
-                  className="workspace__source-pane"
-                  style={{ width: `${100 - splitPercent}%`, pointerEvents: isDragging ? 'none' : 'auto' }}
-                >
-                  <SourceViewer />
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="workspace__page">
-            {view === 'library'     && <LibraryView />}
-            {view === 'collections' && <CollectionsView />}
-            {view === 'settings'    && <SettingsView />}
-          </div>
-        )}
+          {/* Drag handle + right source pane */}
+          {splitActive && (
+            <>
+              <div
+                className={`workspace__split-handle${isDragging ? ' is-dragging' : ''}`}
+                onMouseDown={startDrag}
+                title="Drag to resize"
+              />
+              <div
+                className="workspace__source-pane"
+                style={{ width: `${100 - splitPercent}%`, pointerEvents: isDragging ? 'none' : 'auto' }}
+              >
+                <SourceViewer />
+              </div>
+            </>
+          )}
+        </div>
+        
+        <div className="workspace__page" style={{ display: view !== 'chat' ? 'flex' : 'none' }}>
+          {view === 'library'     && <LibraryView />}
+          {view === 'collections' && <CollectionsView />}
+          {view === 'settings'    && <SettingsView />}
+        </div>
       </main>
       <ContextRail />
       <SearchModal />

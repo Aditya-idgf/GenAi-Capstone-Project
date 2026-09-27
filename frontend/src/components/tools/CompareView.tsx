@@ -18,6 +18,7 @@ import {
   type CompareResponse,
 } from '../../api'
 import { useWorkspace } from '../../state/WorkspaceContext'
+import { globalToolCache } from '../../state/ToolCache'
 
 export function CompareView() {
   const {
@@ -25,6 +26,7 @@ export function CompareView() {
     selectedSourcesForQuery,
     selectedSourceIds,
     activeSources,
+    activeSessionId,
   } = useWorkspace()
 
   const [docs, setDocs] = useState<ApiDocument[]>([])
@@ -35,6 +37,27 @@ export function CompareView() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<CompareResponse | null>(null)
   const [copied, setCopied] = useState<boolean>(false)
+
+  // Cache restore & save
+  useEffect(() => {
+    if (!activeSessionId) return
+    const cacheKey = compare_
+    const cached = globalToolCache[cacheKey]
+    if (cached) {
+      if (cached.docA) setDocA(cached.docA)
+      if (cached.docB) setDocB(cached.docB)
+      if (cached.focusTopic) setFocusTopic(cached.focusTopic)
+      setResult(cached.result)
+    } else {
+      setResult(null)
+    }
+  }, [activeSessionId])
+
+  useEffect(() => {
+    if (activeSessionId) {
+      globalToolCache[compare_] = { docA, docB, focusTopic, result }
+    }
+  }, [docA, docB, focusTopic, result, activeSessionId])
 
   // Load project docs
   useEffect(() => {

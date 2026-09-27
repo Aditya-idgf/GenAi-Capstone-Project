@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { fetchMindMap, type MindMapData, type MindMapNode } from '../../api'
 import { useWorkspace } from '../../state/WorkspaceContext'
+import { globalToolCache } from '../../state/ToolCache'
 
 const NODE_CONFIG: Record<
   string,
@@ -75,6 +76,7 @@ export function InteractiveMindMap() {
     selectedText,
     selectedSourceIds,
     activeSources,
+    activeSessionId,
   } = useWorkspace()
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -87,6 +89,26 @@ export function InteractiveMindMap() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  // Cache restore & save
+  useEffect(() => {
+    if (!activeSessionId) return
+    const cacheKey = mindmap_
+    const cached = globalToolCache[cacheKey]
+    if (cached) {
+      setData(cached.data)
+      setLoading(false)
+    } else {
+      setData(null)
+      setLoading(true) // will be overridden by initial load logic if we auto-load, but let's let the user press "Generate" or auto-load if it does that. Wait, the mind map auto-loads on mount!
+    }
+  }, [activeSessionId])
+
+  useEffect(() => {
+    if (activeSessionId && data) {
+      globalToolCache[mindmap_] = { data }
+    }
+  }, [data, activeSessionId])
 
   // Load mind map from backend
   const loadGraph = async () => {
@@ -120,8 +142,13 @@ export function InteractiveMindMap() {
   }
 
   useEffect(() => {
+    // If we just restored from cache and haven't intentionally changed query parameters, skip auto-load
+    const cacheKey = mindmap_
+    if (globalToolCache[cacheKey] && globalToolCache[cacheKey].data) {
+       return
+    }
     loadGraph()
-  }, [activeProjectId, selectedSourcesForQuery.join(','), selectedText])
+  }, [activeProjectId, selectedSourcesForQuery.join(','), selectedText, activeSessionId])
 
   // Get connected relations for selected node
   const connectedRelations = useMemo(() => {

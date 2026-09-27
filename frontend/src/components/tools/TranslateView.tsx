@@ -12,9 +12,10 @@ import {
 } from 'lucide-react'
 import { translateText, type GlossaryItem } from '../../api'
 import { useWorkspace } from '../../state/WorkspaceContext'
+import { globalToolCache } from '../../state/ToolCache'
 
 export function TranslateView({ initialText }: { initialText?: string }) {
-  const { selectedText, messages } = useWorkspace()
+  const { selectedText, messages, activeSessionId } = useWorkspace()
 
   // Default to highlighted text, or provided text, or last assistant message content
   const defaultText = () => {
@@ -32,6 +33,27 @@ export function TranslateView({ initialText }: { initialText?: string }) {
   const [copied, setCopied] = useState<boolean>(false)
   const [speaking, setSpeaking] = useState<boolean>(false)
   const synthRef = useRef<SpeechSynthesis | null>(null)
+
+  // Cache restore & save
+  useEffect(() => {
+    if (!activeSessionId) return
+    const cacheKey = 	ranslate_
+    const cached = globalToolCache[cacheKey]
+    if (cached) {
+      if (cached.inputText) setInputText(cached.inputText)
+      if (cached.translatedText) setTranslatedText(cached.translatedText)
+      if (cached.glossary) setGlossary(cached.glossary)
+    } else {
+      setTranslatedText('')
+      setGlossary([])
+    }
+  }, [activeSessionId])
+
+  useEffect(() => {
+    if (activeSessionId) {
+      globalToolCache[	ranslate_] = { inputText, translatedText, glossary }
+    }
+  }, [inputText, translatedText, glossary, activeSessionId])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Sparkles, AlertCircle, Loader2, ListTree, Copy, Check } from 'lucide-react'
 import { extractKeyPoints } from '../../api'
 import { useWorkspace } from '../../state/WorkspaceContext'
+import { globalToolCache } from '../../state/ToolCache'
 import ReactMarkdown from 'react-markdown'
 
 export function KeyPointsView() {
@@ -11,6 +12,7 @@ export function KeyPointsView() {
     selectedSourceIds,
     activeSources,
     selectedText,
+    activeSessionId,
   } = useWorkspace()
 
   const [loading, setLoading] = useState(false)
@@ -18,6 +20,26 @@ export function KeyPointsView() {
   const [markdownResult, setMarkdownResult] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [hasTriggered, setHasTriggered] = useState(false)
+
+  // Cache restore & save
+  useEffect(() => {
+    if (!activeSessionId) return
+    const cacheKey = keypoints_
+    const cached = globalToolCache[cacheKey]
+    if (cached) {
+      setMarkdownResult(cached.markdownResult)
+      setHasTriggered(cached.hasTriggered)
+    } else {
+      setMarkdownResult(null)
+      setHasTriggered(false)
+    }
+  }, [activeSessionId])
+
+  useEffect(() => {
+    if (activeSessionId) {
+      globalToolCache[keypoints_] = { markdownResult, hasTriggered }
+    }
+  }, [markdownResult, hasTriggered, activeSessionId])
 
   const handleExtract = async () => {
     if (activeProjectId === null) {
