@@ -193,7 +193,7 @@ export function InteractiveMindMap() {
     const cy = cytoscape({
       container: containerRef.current,
       elements,
-      wheelSensitivity: 0.15,
+      wheelSensitivity: 0.35,
       boxSelectionEnabled: false,
       autounselectify: false,
       style: [
@@ -383,6 +383,7 @@ export function InteractiveMindMap() {
     // Hover effects (minimalistic premium highlight)
     cy.on('mouseover', 'node', (evt) => {
       const node = evt.target
+      cy.container()!.style.cursor = 'pointer'
       if (node.hasClass('faded')) return // don't highlight if it's already faded out by selection/search
       cy.batch(() => {
         node.addClass('hover-highlight')
@@ -393,6 +394,7 @@ export function InteractiveMindMap() {
 
     cy.on('mouseout', 'node', (evt) => {
       const node = evt.target
+      cy.container()!.style.cursor = 'default'
       cy.batch(() => {
         node.removeClass('hover-highlight')
         node.connectedEdges().removeClass('hover-edge-highlight')
