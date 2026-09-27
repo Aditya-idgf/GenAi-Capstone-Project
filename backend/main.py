@@ -12,7 +12,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 from database import engine, Base, get_db
 import models
-from rag_pipeline import process_pdf, get_rag_chain, extract_sources
+from rag_pipeline import process_pdf, get_rag_chain, extract_sources, llm, vector_store
 
 # ── Bootstrap DB ──────────────────────────────────────────────────────────────
 Base.metadata.create_all(bind=engine)
@@ -436,6 +436,130 @@ def get_global_stats(db: Session = Depends(get_db)):
         chunks=result.chunks or 0,
         storage_bytes=result.storage_bytes or 0,
     )
+
+
+
+# ── Tools ─────────────────────────────────────────────────────────────────────
+
+class MindMapRequest(BaseModel):
+    project_id: int
+    filenames: Optional[List[str]] = None
+    text: Optional[str] = None
+    topic: Optional[str] = None
+
+class MindMapNode(BaseModel):
+    id: str
+    label: str
+    type: str  # 'root', 'core', 'concept', 'detail'
+    description: str
+
+class MindMapEdge(BaseModel):
+    source: str
+    target: str
+    label: str = ""
+
+class MindMapResponse(BaseModel):
+    title: str
+    nodes: List[MindMapNode]
+    edges: List[MindMapEdge]
+
+@app.post("/tools/mindmap", response_model=MindMapResponse)
+def generate_mindmap(req: MindMapRequest, db: Session = Depends(get_db)):
+    get_project_or_404(req.project_id, db)
+
+    # 1. Collect context text from selected text, or vector search
+    context_text = ""
+    if req.text and req.text.strip():
+        context_text = req.text.strip()[:6000]
+    else:
+        filters = [{"project_id": req.project_id}]
+        if req.filenames and len(req.filenames) > 0:
+            if len(req.filenames) == 1:
+                filters.append({"filename": req.filenames[0]})
+            else:
+                filters.append({"filename": {"$in": req.filenames}})
+
+        filter_dict = filters[0] if len(filters) == 1 else {"$and": filters}
+        search_query = req.topic or "main concepts key principles architecture overview summary"
+        try:
+            chunks = vector_store.similarity_search(search_query, k=8, filter=filter_dict)
+            context_text = "\n\n".join([c.page_content for c in chunks])[:6000]
+        except Exception as e:
+            print(f"Error querying vector store for mind map: {e}")
+            context_text = ""
+
+    if not context_text:
+        docs = db.query(models.Document).filter(models.Document.project_id == req.project_id).all()
+        if docs:
+            context_text = "Project Documents: " + ", ".join([d.filename for d in docs])
+        else:
+            context_text = "General Document Mind Map"
+
+    # 2. Invoke LLM to generate structured graph JSON
+    system_prompt = (
+        "You are an expert knowledge graph architect. Analyze the provided document context and extract an interconnected concept mind map in JSON format.\n\n"
+        "STRICT JSON RULES:\n"
+        "1. Return ONLY valid raw JSON. Do NOT wrap in markdown fences (no ```json). Do NOT add conversational text.\n"
+        "2. Structure:\n"
+        "{\n"
+        '  "title": "Central Subject Name",\n'
+        '  "nodes": [\n'
+        '    {"id": "1", "label": "Central Subject", "type": "root", "description": "Overarching theme of the document"},\n'
+        '    {"id": "2", "label": "Key Pillar 1", "type": "core", "description": "Major structural section"},\n'
+        '    {"id": "3", "label": "Concept A", "type": "concept", "description": "Important mechanism or topic"},\n'
+        '    {"id": "4", "label": "Detail B", "type": "detail", "description": "Specific attribute, method, or result"}\n'
+        '  ],\n'
+        '  "edges": [\n'
+        '    {"source": "1", "target": "2", "label": "branches into"},\n'
+        '    {"source": "2", "target": "3", "label": "implements"}\n'
+        '  ]\n'
+        "}\n\n"
+        "GRAPH CONSTRAINTS:\n"
+        "- Exactly 1 'root' node.\n"
+        "- 3 to 5 'core' nodes directly connected to 'root'.\n"
+        "- 6 to 10 'concept' or 'detail' nodes connected to core nodes or interrelated.\n"
+        "- Labels must be concise (1-4 words).\n"
+        "- Descriptions must be 1-2 informative sentences.\n"
+        "- Keep edge labels short (e.g. 'requires', 'uses', 'defines', 'produces')."
+    )
+
+    try:
+        response = llm.invoke([
+            HumanMessage(content=f"{system_prompt}\n\nDOCUMENT CONTEXT:\n{context_text}")
+        ])
+        raw = response.content.strip()
+        if raw.startswith("```"):
+            lines = raw.split("\n")
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            raw = "\n".join(lines).strip()
+
+        data = json.loads(raw)
+        return MindMapResponse(
+            title=data.get("title", "Interactive Knowledge Graph"),
+            nodes=[MindMapNode(**n) for n in data.get("nodes", [])],
+            edges=[MindMapEdge(**e) for e in data.get("edges", [])],
+        )
+    except Exception as exc:
+        print(f"Mind map generation error: {exc}. Using robust fallback.")
+        return MindMapResponse(
+            title="Knowledge Graph",
+            nodes=[
+                MindMapNode(id="1", label="Core Document", type="root", description="Central subject matter"),
+                MindMapNode(id="2", label="Key Topics", type="core", description="Primary extracted themes"),
+                MindMapNode(id="3", label="Architecture", type="core", description="Structural mechanisms"),
+                MindMapNode(id="4", label="Analysis", type="concept", description="Detailed examination"),
+                MindMapNode(id="5", label="Outcomes", type="concept", description="Conclusions and results"),
+            ],
+            edges=[
+                MindMapEdge(source="1", target="2", label="encompasses"),
+                MindMapEdge(source="1", target="3", label="structured by"),
+                MindMapEdge(source="2", target="4", label="analyzed in"),
+                MindMapEdge(source="3", target="5", label="yields"),
+            ],
+        )
 
 
 # ── Health ────────────────────────────────────────────────────────────────────

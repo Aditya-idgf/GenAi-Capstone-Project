@@ -176,3 +176,37 @@ export function parseSources(sourcesJson: string | null): ApiSource[] {
   if (!sourcesJson) return []
   try { return JSON.parse(sourcesJson) as ApiSource[] } catch { return [] }
 }
+
+// ── Tools ─────────────────────────────────────────────────────────────────────
+
+export interface MindMapNode {
+  id: string
+  label: string
+  type: 'root' | 'core' | 'concept' | 'detail'
+  description: string
+}
+
+export interface MindMapEdge {
+  source: string
+  target: string
+  label: string
+}
+
+export interface MindMapData {
+  title: string
+  nodes: MindMapNode[]
+  edges: MindMapEdge[]
+}
+
+export function fetchMindMap(payload: {
+  project_id: number
+  filenames?: string[]
+  text?: string
+  topic?: string
+}): Promise<MindMapData> {
+  return request('/tools/mindmap', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}

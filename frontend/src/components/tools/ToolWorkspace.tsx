@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { LANGUAGES, PRINCIPLES } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
 import type { ToolId } from '../../types'
+import { InteractiveMindMap } from './InteractiveMindMap'
 
 const TITLES: Record<ToolId, string> = {
   summarize: 'Summarize',
@@ -120,24 +121,6 @@ function Translate({ text }: { text: string }) {
   )
 }
 
-function MindMap() {
-  return (
-    <div className="mindmap">
-      <div className="mindmap__root">RAG</div>
-      <ul>
-        {PRINCIPLES.map((item) => (
-          <li key={item.n}>
-            <span>{item.n}</span>
-            <div>
-              <strong>{item.title}</strong>
-              <small>{item.body}</small>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
 
 export function ToolWorkspace() {
   const { activeTool, closeTool, selectedText, selectedSourceIds, activeSources } = useWorkspace()
@@ -173,7 +156,7 @@ export function ToolWorkspace() {
         {activeTool === 'compare'   && <Compare excerpts={selectedExcerpts} />}
         {activeTool === 'explain'   && <Explain />}
         {activeTool === 'translate' && <Translate text={text} />}
-        {activeTool === 'mindmap'   && <MindMap />}
+        {activeTool === 'mindmap'   && <InteractiveMindMap />}
       </div>
     </div>
   )
