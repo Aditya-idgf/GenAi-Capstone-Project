@@ -270,3 +270,26 @@ export function translateText(payload: {
     body: JSON.stringify(payload),
   })
 }
+\n
+export interface KeyPointsRequest {
+  project_id: number;
+  text?: string;
+  filenames?: string[];
+}
+
+export interface KeyPointsResponse {
+  markdown_content: string;
+}
+
+export async function extractKeyPoints(req: KeyPointsRequest): Promise<KeyPointsResponse> {
+  const res = await fetch(${API_URL}/tools/keypoints, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const d = await res.json();
+    throw new Error(d.detail || 'Failed to extract key points');
+  }
+  return res.json();
+}

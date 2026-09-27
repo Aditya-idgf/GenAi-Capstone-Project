@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { PRINCIPLES } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
@@ -5,6 +6,7 @@ import type { ToolId } from '../../types'
 import { CompareView } from './CompareView'
 import { InteractiveMindMap } from './InteractiveMindMap'
 import { TranslateView } from './TranslateView'
+import { KeyPointsView } from './KeyPointsView'
 
 const TITLES: Record<ToolId, string> = {
   summarize: 'Summarize',
@@ -28,22 +30,6 @@ function Summary({ text }: { text: string }) {
       into the prompt, generates an answer from the combined context, and keeps every claim
       traceable to a source. {text.slice(0, 180)}
     </p>
-  )
-}
-
-function KeyPoints() {
-  return (
-    <ul className="result-list">
-      {PRINCIPLES.map((item) => (
-        <li key={item.n}>
-          <span>{item.n}</span>
-          <p>
-            <strong>{item.title}: </strong>
-            {item.body}
-          </p>
-        </li>
-      ))}
-    </ul>
   )
 }
 
@@ -76,9 +62,28 @@ function Explain() {
   )
 }
 
-
 export function ToolWorkspace() {
   const { activeTool, closeTool, selectedText, selectedSourceIds, activeSources } = useWorkspace()
+  const [mountedTools, setMountedTools] = useState<Set<ToolId>>(new Set())
+
+  useEffect(() => {
+    if (activeTool) {
+      setMountedTools((prev) => {
+        if (prev.has(activeTool)) return prev
+        const next = new Set(prev)
+        next.add(activeTool)
+        return next
+      })
+    }
+  }, [activeTool])
+
+  // Clear mounted tools if we fully close the workspace
+  useEffect(() => {
+    if (!activeTool) {
+      setMountedTools(new Set())
+    }
+  }, [activeTool])
+
   if (!activeTool) return null
 
   const selectedExcerpts = activeSources
@@ -88,7 +93,7 @@ export function ToolWorkspace() {
   const text = workingText(selectedText, selectedExcerpts)
 
   return (
-    <div className="sheet">
+    <div className="sheet" style={{ display: 'flex', flexDirection: 'column' }}>
       <header>
         <div>
           <p className="eyebrow">Tool</p>
@@ -105,13 +110,37 @@ export function ToolWorkspace() {
           <X size={16} strokeWidth={1.8} />
         </button>
       </header>
-      <div className="sheet__body">
-        {activeTool === 'summarize' && <Summary text={text} />}
-        {activeTool === 'keypoints' && <KeyPoints />}
-        {activeTool === 'compare'   && <CompareView />}
-        {activeTool === 'explain'   && <Explain />}
-        {activeTool === 'translate' && <TranslateView initialText={text} />}
-        {activeTool === 'mindmap'   && <InteractiveMindMap />}
+      <div className="sheet__body" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {mountedTools.has('summarize') && (
+          <div style={{ display: activeTool === 'summarize' ? 'block' : 'none' }}>
+            <Summary text={text} />
+          </div>
+        )}
+        {mountedTools.has('keypoints') && (
+          <div style={{ display: activeTool === 'keypoints' ? 'block' : 'none', height: '100%' }}>
+            <KeyPointsView />
+          </div>
+        )}
+        {mountedTools.has('compare') && (
+          <div style={{ display: activeTool === 'compare' ? 'block' : 'none', height: '100%' }}>
+            <CompareView />
+          </div>
+        )}
+        {mountedTools.has('explain') && (
+          <div style={{ display: activeTool === 'explain' ? 'block' : 'none' }}>
+            <Explain />
+          </div>
+        )}
+        {mountedTools.has('translate') && (
+          <div style={{ display: activeTool === 'translate' ? 'block' : 'none', height: '100%' }}>
+            <TranslateView initialText={text} />
+          </div>
+        )}
+        {mountedTools.has('mindmap') && (
+          <div style={{ display: activeTool === 'mindmap' ? 'block' : 'none', height: '100%' }}>
+            <InteractiveMindMap />
+          </div>
+        )}
       </div>
     </div>
   )
