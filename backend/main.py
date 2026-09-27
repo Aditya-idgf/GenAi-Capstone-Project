@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import shutil
 from typing import List, Optional
@@ -14,7 +14,7 @@ from database import engine, Base, get_db
 import models
 from rag_pipeline import process_pdf, get_rag_chain, extract_sources, llm, vector_store
 
-# ── Bootstrap DB ──────────────────────────────────────────────────────────────
+# â”€â”€ Bootstrap DB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="DocuMind API", version="2.0.0")
@@ -31,7 +31,7 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-# ── Pydantic schemas ──────────────────────────────────────────────────────────
+# â”€â”€ Pydantic schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class ProjectCreate(BaseModel):
     name: str
@@ -100,7 +100,7 @@ class KnowledgeStats(BaseModel):
     storage_bytes: int
 
 
-# ── Helper ────────────────────────────────────────────────────────────────────
+# â”€â”€ Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def get_project_or_404(project_id: int, db: Session) -> models.Project:
     p = db.query(models.Project).filter(models.Project.id == project_id).first()
@@ -118,7 +118,7 @@ def get_session_or_create(session_id: str, project_id: int, db: Session) -> mode
     return sess
 
 
-# ── Projects ──────────────────────────────────────────────────────────────────
+# â”€â”€ Projects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @app.get("/projects", response_model=List[ProjectResponse])
 def list_projects(db: Session = Depends(get_db)):
@@ -197,7 +197,7 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     return {"detail": "Deleted"}
 
 
-# ── Chat Sessions ─────────────────────────────────────────────────────────────
+# â”€â”€ Chat Sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @app.get("/projects/{project_id}/sessions", response_model=List[ChatSessionResponse])
 def list_sessions(project_id: int, db: Session = Depends(get_db)):
@@ -243,7 +243,7 @@ def get_session_history(session_id: str, db: Session = Depends(get_db)):
     return rows
 
 
-# ── Query / Chat ──────────────────────────────────────────────────────────────
+# â”€â”€ Query / Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @app.post("/query", response_model=QueryResponse)
 def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
@@ -293,7 +293,7 @@ def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
     return QueryResponse(answer=answer, sources=sources, session_id=request.session_id)
 
 
-# ── Documents ─────────────────────────────────────────────────────────────────
+# â”€â”€ Documents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @app.post("/projects/{project_id}/upload", response_model=DocumentResponse)
 async def upload_document(
@@ -398,7 +398,7 @@ def serve_document_file(doc_id: int, db: Session = Depends(get_db)):
     )
 
 
-# ── Stats (project-scoped) ────────────────────────────────────────────────────
+# â”€â”€ Stats (project-scoped) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @app.get("/projects/{project_id}/stats", response_model=KnowledgeStats)
 def get_project_stats(project_id: int, db: Session = Depends(get_db)):
@@ -439,7 +439,7 @@ def get_global_stats(db: Session = Depends(get_db)):
 
 
 
-# ── Tools ─────────────────────────────────────────────────────────────────────
+# â”€â”€ Tools â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class MindMapRequest(BaseModel):
     project_id: int
@@ -562,7 +562,7 @@ def generate_mindmap(req: MindMapRequest, db: Session = Depends(get_db)):
         )
 
 
-# ── Compare Tool ─────────────────────────────────────────────────────────────
+# â”€â”€ Compare Tool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 class KeyPointsRequest(BaseModel):
@@ -604,7 +604,8 @@ def extract_key_points(req: KeyPointsRequest, db: Session = Depends(get_db)):
         return KeyPointsResponse(markdown_content=response.text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-\nclass CompareRequest(BaseModel):
+
+class CompareRequest(BaseModel):
     project_id: int
     doc_a: str
     doc_b: str
@@ -728,7 +729,7 @@ def compare_documents(req: CompareRequest, db: Session = Depends(get_db)):
         )
 
 
-# ── Translate Tool (Hindi) ───────────────────────────────────────────────────
+# â”€â”€ Translate Tool (Hindi) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class GlossaryItem(BaseModel):
     source_term: str
@@ -756,22 +757,22 @@ def translate_text(req: TranslateRequest):
 
     prompt = (
         "You are an expert English-to-Hindi technical translator.\n"
-        "Translate the following English passage into natural, clear, grammatically precise Hindi (हिंदी) in Devanagari script.\n\n"
+        "Translate the following English passage into natural, clear, grammatically precise Hindi (à¤¹à¤¿à¤‚à¤¦à¥€) in Devanagari script.\n\n"
         "GUIDELINES:\n"
         "1. NATURAL PROSE: Translate prose into fluent, idiomatic Hindi.\n"
-        "2. PRESERVE TECHNICAL TERMS: Keep standard computer science, AI, and domain terms (e.g., RAG, Vector Database, Prompt, API, Embedding, Chunking, Cache, LLM, Pipeline, Query, Token) in English or provide phonetic Devanagari followed by English in parentheses (e.g. वेक्टर डेटाबेस (Vector Database)). Never use awkward, incomprehensible literal translations.\n"
+        "2. PRESERVE TECHNICAL TERMS: Keep standard computer science, AI, and domain terms (e.g., RAG, Vector Database, Prompt, API, Embedding, Chunking, Cache, LLM, Pipeline, Query, Token) in English or provide phonetic Devanagari followed by English in parentheses (e.g. à¤µà¥‡à¤•à¥à¤Ÿà¤° à¤¡à¥‡à¤Ÿà¤¾à¤¬à¥‡à¤¸ (Vector Database)). Never use awkward, incomprehensible literal translations.\n"
         "3. PRESERVE FORMULAS & CODE: Keep any LaTeX expressions ($...$, $$...$$), code blocks, bullet points, numbers, and citation tags ([1], [2]) intact.\n"
         "4. Include a glossary of 3-5 key technical terms translated.\n\n"
         f"TEXT TO TRANSLATE:\n{req.text[:5000]}\n\n"
         "STRICT JSON OUTPUT RULES:\n"
         "Return ONLY a valid JSON object matching:\n"
         "{\n"
-        '  "translated_text": "अनुवादित हिंदी पाठ...",\n'
+        '  "translated_text": "à¤…à¤¨à¥à¤µà¤¾à¤¦à¤¿à¤¤ à¤¹à¤¿à¤‚à¤¦à¥€ à¤ªà¤¾à¤ ...",\n'
         '  "glossary": [\n'
         '    {\n'
         '      "source_term": "Technical Term in English",\n'
-        '      "translated_term": "हिंदी शब्द / लिप्यंतरण (English)",\n'
-        '      "explanation": "संक्षिप्त विवरण"\n'
+        '      "translated_term": "à¤¹à¤¿à¤‚à¤¦à¥€ à¤¶à¤¬à¥à¤¦ / à¤²à¤¿à¤ªà¥à¤¯à¤‚à¤¤à¤°à¤£ (English)",\n'
+        '      "explanation": "à¤¸à¤‚à¤•à¥à¤·à¤¿à¤ªà¥à¤¤ à¤µà¤¿à¤µà¤°à¤£"\n'
         '    }\n'
         '  ]\n'
         "}"
@@ -799,14 +800,14 @@ def translate_text(req: TranslateRequest):
         print(f"Translation error: {exc}. Using fallback.")
         # Minimal direct fallback
         return TranslateResponse(
-            translated_text="दिए गए पाठ का अनुवाद संसाधित किया जा रहा है। कृपया पुनः प्रयास करें।",
+            translated_text="à¤¦à¤¿à¤ à¤—à¤ à¤ªà¤¾à¤  à¤•à¤¾ à¤…à¤¨à¥à¤µà¤¾à¤¦ à¤¸à¤‚à¤¸à¤¾à¤§à¤¿à¤¤ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾ à¤°à¤¹à¤¾ à¤¹à¥ˆà¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤ªà¥à¤¨à¤ƒ à¤ªà¥à¤°à¤¯à¤¾à¤¸ à¤•à¤°à¥‡à¤‚à¥¤",
             source_language="English",
             target_language=req.target_language,
             glossary=[],
         )
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
+# â”€â”€ Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @app.get("/health")
 def health():
