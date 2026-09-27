@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { PRINCIPLES } from '../../data'
 import { useWorkspace } from '../../state/WorkspaceContext'
@@ -63,8 +63,9 @@ function Explain() {
 }
 
 export function ToolWorkspace() {
-  const { activeTool, closeTool, selectedText, selectedSourceIds, activeSources } = useWorkspace()
+  const { activeTool, closeTool, selectedText, selectedSourceIds, activeSources, activeProjectId } = useWorkspace()
   const [mountedTools, setMountedTools] = useState<Set<ToolId>>(new Set())
+  const prevProjectId = useRef(activeProjectId)
 
   useEffect(() => {
     if (activeTool) {
@@ -77,14 +78,13 @@ export function ToolWorkspace() {
     }
   }, [activeTool])
 
-  // Clear mounted tools if we fully close the workspace
+  // Clear mounted tools only if the project changes (to prevent old data leaking into new projects)
   useEffect(() => {
-    if (!activeTool) {
+    if (activeProjectId !== prevProjectId.current) {
       setMountedTools(new Set())
+      prevProjectId.current = activeProjectId
     }
-  }, [activeTool])
-
-  if (!activeTool) return null
+  }, [activeProjectId])
 
   const selectedExcerpts = activeSources
     .filter((s) => selectedSourceIds.includes(`${s.title}-${s.page}-${s.chunk}`))
@@ -93,11 +93,11 @@ export function ToolWorkspace() {
   const text = workingText(selectedText, selectedExcerpts)
 
   return (
-    <div className="sheet" style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="sheet" style={{ display: activeTool ? 'flex' : 'none', flexDirection: 'column' }}>
       <header>
         <div>
           <p className="eyebrow">Tool</p>
-          <h3>{TITLES[activeTool]}</h3>
+          <h3>{activeTool ? TITLES[activeTool] : 'Tool'}</h3>
           <p className="muted">
             {selectedText
               ? 'Operating on selected answer text'
