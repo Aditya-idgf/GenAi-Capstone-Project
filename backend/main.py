@@ -250,13 +250,15 @@ def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
     get_project_or_404(request.project_id, db)
     sess = get_session_or_create(request.session_id, request.project_id, db)
 
-    # Build chat history from DB
+    # Build chat history from DB (limit to last 6 messages to prevent 413 context window errors)
     history_rows = (
         db.query(models.ChatMessage)
         .filter(models.ChatMessage.session_id == request.session_id)
-        .order_by(models.ChatMessage.created_at)
+        .order_by(models.ChatMessage.created_at.desc())
+        .limit(6)
         .all()
     )
+    history_rows.reverse() # Restore chronological order
     chat_history = [
         HumanMessage(content=r.content) if r.role == "user" else AIMessage(content=r.content)
         for r in history_rows
@@ -274,7 +276,7 @@ def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
     # Run RAG chain scoped to this project across all files (or selected filenames)
     try:
         print(f"DEBUG query_chatbot: project_id={request.project_id}, filenames={request.filenames}")
-        k_val = max(request.source_count, 12)
+        k_val = min(request.source_count, 8) # Cap at 8 to prevent Context Window 413 Errors
         chain    = get_rag_chain(project_id=request.project_id, k=k_val, filenames=request.filenames)
         response = chain.invoke({"input": request.question, "chat_history": chat_history})
         answer   = response["answer"]
