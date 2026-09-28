@@ -8,13 +8,20 @@ import { useEffect, useState } from 'react'
 import { useWorkspace } from '../../state/WorkspaceContext'
 import type { ChatMessage } from '../../types'
 
-function preprocessLaTeX(content: string): string {
+function preprocessMarkdown(content: string): string {
   if (!content) return ''
-  // 1. Convert \[ ... \] to $$ ... $$
-  let text = content.replace(/\\\[([\s\S]*?)\\\]/g, (_, eq) => `\n$$\n${eq.trim()}\n$$\n`)
-  // 2. Convert \( ... \) to $ ... $
+  let text = content
+  // 1. Convert HTML <br> to newlines to prevent weird tags rendering
+  text = text.replace(/<br\s*\/?>/gi, '\n')
+  // 2. Convert citations like [filename.pdf] or [filename.pdf, Page X] to Markdown links
+  text = text.replace(/\[([^\]]+\.pdf(?:,\s*Page\s*\d+)?)\]/gi, (match, p1) => {
+    return `[${match}](#cite-${encodeURIComponent(p1)})`
+  })
+  // 3. Convert \[ ... \] to $$ ... $$
+  text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_, eq) => `\n$$\n${eq.trim()}\n$$\n`)
+  // 4. Convert \( ... \) to $ ... $
   text = text.replace(/\\\(([\s\S]*?)\\\)/g, (_, eq) => `$${eq.trim()}$`)
-  // 3. Convert standalone bracketed equations [ \text{...} ] to $$ ... $$
+  // 5. Convert standalone bracketed equations [ \text{...} ] to $$ ... $$
   text = text.replace(/(?:^|\n)\s*\[\s*(\\([a-zA-Z]+)[\s\S]*?)\s*\]\s*(?:\n|$)/g, (_, eq) => `\n$$\n${eq.trim()}\n$$\n`)
   return text
 }
@@ -48,7 +55,7 @@ function LoadingDots() {
 }
 
 export function AssistantResponse({ message }: { message: ChatMessage }) {
-  const { setSelectedText } = useWorkspace()
+  const { setSelectedText, openSourceTab } = useWorkspace()
 
   if (message.isLoading) {
     return (
@@ -72,6 +79,37 @@ export function AssistantResponse({ message }: { message: ChatMessage }) {
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex]}
           components={{
+            a({ node, href, children, ...props }: any) {
+              if (href && href.startsWith('#cite-')) {
+                const sourceName = decodeURIComponent(href.replace('#cite-', ''))
+                const filename = sourceName.split(',')[0].trim() // ignore page num for tab opening
+                return (
+                  <button
+                    type="button"
+                    className="citation-pill"
+                    style={{
+                      background: 'var(--accent)',
+                      color: 'var(--bg-app)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0 6px',
+                      fontSize: '0.85em',
+                      cursor: 'pointer',
+                      margin: '0 2px',
+                      fontFamily: 'monospace'
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      openSourceTab(filename)
+                    }}
+                    title={`View ${filename} in split pane`}
+                  >
+                    {children}
+                  </button>
+                )
+              }
+              return <a href={href} {...props}>{children}</a>
+            },
             code({ node, inline, className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '')
               if (!inline && match && match[1] === 'mermaid') {
@@ -91,7 +129,7 @@ export function AssistantResponse({ message }: { message: ChatMessage }) {
             }
           }}
         >
-          {preprocessLaTeX(message.content)}
+          {preprocessMarkdown(message.content)}
         </ReactMarkdown>
       </div>
 

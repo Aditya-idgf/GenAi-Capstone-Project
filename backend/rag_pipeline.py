@@ -7,7 +7,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_groq import ChatGroq
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 
 load_dotenv()
 
@@ -122,7 +122,8 @@ def get_rag_chain(project_id: int = None, k: int = 4, filenames: list[str] = Non
         MessagesPlaceholder("chat_history"),
         ("human", "{input}"),
     ])
-    qa_chain = create_stuff_documents_chain(llm, qa_prompt)
+    document_prompt = PromptTemplate.from_template("Source: {source} (Page {page})\nContent: {page_content}")
+    qa_chain = create_stuff_documents_chain(llm, qa_prompt, document_prompt=document_prompt)
 
     return create_retrieval_chain(history_aware_retriever, qa_chain)
 
