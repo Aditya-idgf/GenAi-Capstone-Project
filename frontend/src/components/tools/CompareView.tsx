@@ -41,7 +41,7 @@ export function CompareView() {
   // Cache restore & save
   useEffect(() => {
     if (!activeSessionId) return
-    const cacheKey = compare_
+    const cacheKey = `compare_${activeSessionId}`
     const cached = globalToolCache[cacheKey]
     if (cached) {
       if (cached.docA) setDocA(cached.docA)
@@ -55,7 +55,7 @@ export function CompareView() {
 
   useEffect(() => {
     if (activeSessionId) {
-      globalToolCache[compare_] = { docA, docB, focusTopic, result }
+      globalToolCache[`compare_${activeSessionId}`] = { docA, docB, focusTopic, result }
     }
   }, [docA, docB, focusTopic, result, activeSessionId])
 

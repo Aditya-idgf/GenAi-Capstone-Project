@@ -37,7 +37,7 @@ export function TranslateView({ initialText }: { initialText?: string }) {
   // Cache restore & save
   useEffect(() => {
     if (!activeSessionId) return
-    const cacheKey = 	ranslate_
+    const cacheKey = `translate_${activeSessionId}`
     const cached = globalToolCache[cacheKey]
     if (cached) {
       if (cached.inputText) setInputText(cached.inputText)
@@ -51,7 +51,7 @@ export function TranslateView({ initialText }: { initialText?: string }) {
 
   useEffect(() => {
     if (activeSessionId) {
-      globalToolCache[	ranslate_] = { inputText, translatedText, glossary }
+      globalToolCache[`translate_${activeSessionId}`] = { inputText, translatedText, glossary }
     }
   }, [inputText, translatedText, glossary, activeSessionId])
 

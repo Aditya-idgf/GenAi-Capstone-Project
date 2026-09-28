@@ -24,7 +24,7 @@ export function KeyPointsView() {
   // Cache restore & save
   useEffect(() => {
     if (!activeSessionId) return
-    const cacheKey = keypoints_
+    const cacheKey = `keypoints_${activeSessionId}`
     const cached = globalToolCache[cacheKey]
     if (cached) {
       setMarkdownResult(cached.markdownResult)
@@ -37,7 +37,7 @@ export function KeyPointsView() {
 
   useEffect(() => {
     if (activeSessionId) {
-      globalToolCache[keypoints_] = { markdownResult, hasTriggered }
+      globalToolCache[`keypoints_${activeSessionId}`] = { markdownResult, hasTriggered }
     }
   }, [markdownResult, hasTriggered, activeSessionId])
 

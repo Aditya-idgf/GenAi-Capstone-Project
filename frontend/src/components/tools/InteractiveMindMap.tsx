@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import cytoscape, { type Core } from 'cytoscape'
 import {
   Maximize2,
@@ -93,7 +93,7 @@ export function InteractiveMindMap() {
   // Cache restore & save
   useEffect(() => {
     if (!activeSessionId) return
-    const cacheKey = mindmap_
+    const cacheKey = `mindmap_${activeSessionId}`
     const cached = globalToolCache[cacheKey]
     if (cached) {
       setData(cached.data)
@@ -106,7 +106,7 @@ export function InteractiveMindMap() {
 
   useEffect(() => {
     if (activeSessionId && data) {
-      globalToolCache[mindmap_] = { data }
+      globalToolCache[`mindmap_${activeSessionId}`] = { data }
     }
   }, [data, activeSessionId])
 
@@ -143,7 +143,7 @@ export function InteractiveMindMap() {
 
   useEffect(() => {
     // If we just restored from cache and haven't intentionally changed query parameters, skip auto-load
-    const cacheKey = mindmap_
+    const cacheKey = `mindmap_${activeSessionId}`
     if (globalToolCache[cacheKey] && globalToolCache[cacheKey].data) {
        return
     }
