@@ -117,12 +117,14 @@ def get_rag_chain(project_id: int = None, k: int = 4, filenames: list[str] = Non
          "3. If the user's question relates to the documents, use the context extensively to form your answer.\n"
          "4. If the user's question is completely unrelated to the documents or context is empty, you MAY use your general knowledge, but politely mention that the answer is not drawn from the uploaded sources.\n"
          "5. Always aim to be helpful, accurate, and structured in your response.\n"
-         "6. When presenting mathematical formulas or equations, ALWAYS format them using proper LaTeX syntax enclosed in double dollar signs ($$...$$) for standalone block equations, or single dollar signs ($...$) for inline math. Never use raw square brackets without dollar delimiters.\n\n"
+         "6. When presenting mathematical formulas or equations, ALWAYS format them using proper LaTeX syntax enclosed in double dollar signs ($$...$$) for standalone block equations, or single dollar signs ($...$) for inline math. Never use raw square brackets without dollar delimiters.\n"
+         "7. CRITICAL: You MUST include inline citations in your text referencing the source documents! Format them strictly as [filename.pdf] or [filename.pdf, Page X].\n"
+         "8. CRITICAL: Do NOT use HTML tags like <br>. Use standard markdown for line breaks and formatting.\n\n"
          "Context from currently selected documents:\n{context}"),
         MessagesPlaceholder("chat_history"),
         ("human", "{input}"),
     ])
-    document_prompt = PromptTemplate.from_template("Source: {source} (Page {page})\nContent: {page_content}")
+    document_prompt = PromptTemplate.from_template("Source Document: {filename}\nContent: {page_content}")
     qa_chain = create_stuff_documents_chain(llm, qa_prompt, document_prompt=document_prompt)
 
     return create_retrieval_chain(history_aware_retriever, qa_chain)

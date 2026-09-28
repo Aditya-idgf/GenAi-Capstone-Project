@@ -129,7 +129,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [isQuerying, setIsQuerying] = useState(false)
   const [composer, setComposer] = useState('')
   const [collection, setCollection] = useState('default')
-  const [sourceCount, setSourceCount] = useState(4)
+  const [sourceCount, setSourceCount] = useState(12)
   const [model, setModel] = useState('llama-3.1-8b-instant')
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)

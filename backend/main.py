@@ -274,7 +274,8 @@ def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
     # Run RAG chain scoped to this project across all files (or selected filenames)
     try:
         print(f"DEBUG query_chatbot: project_id={request.project_id}, filenames={request.filenames}")
-        chain    = get_rag_chain(project_id=request.project_id, k=request.source_count, filenames=request.filenames)
+        k_val = max(request.source_count, 12)
+        chain    = get_rag_chain(project_id=request.project_id, k=k_val, filenames=request.filenames)
         response = chain.invoke({"input": request.question, "chat_history": chat_history})
         answer   = response["answer"]
         sources  = extract_sources(response)
