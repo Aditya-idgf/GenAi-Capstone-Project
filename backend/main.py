@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import shutil
 from typing import List, Optional
@@ -276,8 +276,14 @@ def query_chatbot(request: QueryRequest, db: Session = Depends(get_db)):
     # Run RAG chain scoped to this project across all files (or selected filenames)
     try:
         print(f"DEBUG query_chatbot: project_id={request.project_id}, filenames={request.filenames}")
+        # Resolve active document manifest for domain bounding & guardrails
+        doc_manifest = request.filenames
+        if not doc_manifest:
+            docs = db.query(models.Document).filter(models.Document.project_id == request.project_id).all()
+            doc_manifest = [d.filename for d in docs]
+
         k_val = min(request.source_count, 8) # Cap at 8 to prevent Context Window 413 Errors
-        chain    = get_rag_chain(project_id=request.project_id, k=k_val, filenames=request.filenames)
+        chain    = get_rag_chain(project_id=request.project_id, k=k_val, filenames=request.filenames, doc_manifest=doc_manifest)
         response = chain.invoke({"input": request.question, "chat_history": chat_history})
         answer   = response["answer"]
         sources  = extract_sources(response)
