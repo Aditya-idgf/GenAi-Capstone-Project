@@ -12,6 +12,7 @@ export function SourceViewer() {
     activeSources,
     activeProjectId,
     stats,
+    targetSourcePage,
   } = useWorkspace()
 
   const [projectDocs, setProjectDocs] = useState<ApiDocument[]>([])
@@ -56,10 +57,19 @@ export function SourceViewer() {
 
   const activeSource = activeSourceTabId ? (sourceMap.get(activeSourceTabId) ?? { title: activeSourceTabId, pages: [], excerpts: [] }) : null
 
-  // Auto-switch to cited page when opening or switching tabs
+  // Listen for targeted page changes (e.g. clicking an inline citation in chat)
+  useEffect(() => {
+    if (targetSourcePage && targetSourcePage.filename === activeSourceTabId) {
+      setActivePage(targetSourcePage.page)
+    }
+  }, [targetSourcePage, activeSourceTabId])
+
+  // Auto-switch to cited page when opening or manually switching tabs
   const citedPageKey = activeSource?.pages?.join(',')
   useEffect(() => {
-    if (activeSource?.pages && activeSource.pages.length > 0) {
+    if (targetSourcePage && targetSourcePage.filename === activeSourceTabId) {
+      setActivePage(targetSourcePage.page)
+    } else if (activeSource?.pages && activeSource.pages.length > 0) {
       setActivePage(activeSource.pages[0])
     } else {
       setActivePage(1)

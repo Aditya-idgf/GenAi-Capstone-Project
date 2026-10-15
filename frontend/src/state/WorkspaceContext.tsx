@@ -35,6 +35,12 @@ export interface ToastItem {
   duration?: number
 }
 
+export interface TargetSourcePage {
+  filename: string
+  page: number
+  timestamp: number
+}
+
 type WorkspaceContextValue = {
   view: ViewId
   setView: (v: ViewId) => void
@@ -81,7 +87,8 @@ type WorkspaceContextValue = {
   setSelectedSourcesForQuery: (v: string[]) => void
   openSourceIds: string[]          // tabs open in split pane
   activeSourceTabId: string | null // which tab is focused
-  openSourceTab: (id: string) => void
+  targetSourcePage: TargetSourcePage | null // targeted page to jump to
+  openSourceTab: (id: string, page?: number) => void
   closeSourceTab: (id: string) => void
   setActiveSourceTab: (id: string) => void
   // Legacy compat — keeps SourcePreview working
@@ -138,6 +145,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [previewSourceId, setPreviewSourceId] = useState<string | null>(null)
   const [openSourceIds, setOpenSourceIds] = useState<string[]>([])
   const [activeSourceTabId, setActiveSourceTabId] = useState<string | null>(null)
+  const [targetSourcePage, setTargetSourcePage] = useState<TargetSourcePage | null>(null)
   const [stats, setStats] = useState<KnowledgeStats | null>(null)
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [selectedText, setSelectedText] = useState('')
@@ -493,9 +501,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     [isQuerying, activeProjectId, activeSessionId, sourceCount, selectedSourcesForQuery, refreshStats],
   )
 
-  const openSourceTab = useCallback((id: string) => {
+  const openSourceTab = useCallback((id: string, page?: number) => {
     setOpenSourceIds((prev) => prev.includes(id) ? prev : [...prev, id])
     setActiveSourceTabId(id)
+    if (page && page > 0) {
+      setTargetSourcePage({ filename: id, page, timestamp: Date.now() })
+    }
   }, [])
 
   const closeSourceTab = useCallback((id: string) => {
@@ -542,6 +553,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     selectedSourceIds, toggleSource,
     selectedSourcesForQuery, setSelectedSourcesForQuery,
     openSourceIds, activeSourceTabId,
+    targetSourcePage,
     openSourceTab, closeSourceTab,
     setActiveSourceTab: setActiveSourceTabId,
     previewSourceId, setPreviewSourceId,

@@ -14,8 +14,8 @@ function preprocessMarkdown(content: string): string {
   // 1. Convert HTML <br> to newlines to prevent weird tags rendering
   text = text.replace(/<br\s*\/?>/gi, '\n')
   // 2. Convert citations like [filename.pdf] or [filename.pdf, Page X] to Markdown links
-  text = text.replace(/\[([^\]]+\.pdf(?:,\s*Page\s*\d+)?)\]/gi, (match, p1) => {
-    return `[${match}](#cite-${encodeURIComponent(p1)})`
+  text = text.replace(/\[([^\]]+\.pdf(?:\s*,\s*(?:Page|page|p\.)?\s*\d+)?)\]/gi, (_, p1) => {
+    return `[${p1}](#cite-${encodeURIComponent(p1)})`
   })
   // 3. Convert \[ ... \] to $$ ... $$
   text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_, eq) => `\n$$\n${eq.trim()}\n$$\n`)
@@ -81,8 +81,19 @@ export function AssistantResponse({ message }: { message: ChatMessage }) {
           components={{
             a({ node, href, children, ...props }: any) {
               if (href && href.startsWith('#cite-')) {
-                const sourceName = decodeURIComponent(href.replace('#cite-', ''))
-                const filename = sourceName.split(',')[0].trim() // ignore page num for tab opening
+                const rawTarget = decodeURIComponent(href.replace('#cite-', ''))
+                const commaIdx = rawTarget.indexOf(',')
+                let filename = rawTarget.trim()
+                let pageNumber: number | undefined = undefined
+                if (commaIdx !== -1) {
+                  filename = rawTarget.slice(0, commaIdx).trim()
+                  const pagePart = rawTarget.slice(commaIdx + 1)
+                  const match = pagePart.match(/\d+/)
+                  if (match) {
+                    pageNumber = parseInt(match[0], 10)
+                  }
+                }
+                const displayLabel = pageNumber ? `${filename} • p. ${pageNumber}` : filename
                 return (
                   <button
                     type="button"
@@ -92,19 +103,23 @@ export function AssistantResponse({ message }: { message: ChatMessage }) {
                       color: 'var(--bg-app)',
                       border: 'none',
                       borderRadius: '4px',
-                      padding: '0 6px',
-                      fontSize: '0.85em',
+                      padding: '1px 6px',
+                      fontSize: '0.82em',
+                      fontWeight: 600,
                       cursor: 'pointer',
                       margin: '0 2px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                       fontFamily: 'monospace'
                     }}
                     onClick={(e) => {
                       e.preventDefault()
-                      openSourceTab(filename)
+                      openSourceTab(filename, pageNumber)
                     }}
-                    title={`View ${filename} in split pane`}
+                    title={`Jump to ${filename}${pageNumber ? ` (Page ${pageNumber})` : ''} in split pane`}
                   >
-                    {children}
+                    [{displayLabel}]
                   </button>
                 )
               }

@@ -51,11 +51,14 @@ def process_pdf(file_path: str, project_id: int = 1, collection_name: str = "def
     chunks   = splitter.split_documents(documents)
 
     filename = os.path.basename(file_path)
-    # Tag every chunk with project_id, collection, and filename so we can filter later
+    # Tag every chunk with project_id, collection, filename, and 1-indexed page
     for chunk in chunks:
         chunk.metadata["project_id"] = project_id
         chunk.metadata["collection"] = collection_name
         chunk.metadata["filename"] = filename
+        page_val = chunk.metadata.get("page", 0)
+        chunk.metadata["page_label"] = str(page_val + 1)
+        chunk.metadata["page_num"] = str(page_val + 1)
 
     vector_store.add_documents(chunks)
 
@@ -63,6 +66,22 @@ def process_pdf(file_path: str, project_id: int = 1, collection_name: str = "def
         "pages":  len(documents),
         "chunks": len(chunks),
     }
+
+
+class SafeDocumentPrompt(PromptTemplate):
+    """Custom document prompt that dynamically resolves the 1-indexed page number."""
+    def format(self, **kwargs) -> str:
+        filename = kwargs.get("filename", "Unknown Document")
+        # Resolve 1-indexed page from page_label or page
+        page = kwargs.get("page_label")
+        if not page:
+            p = kwargs.get("page", 0)
+            try:
+                page = str(int(p) + 1)
+            except Exception:
+                page = "1"
+        content = kwargs.get("page_content", "")
+        return f"Source Document: {filename} (Page {page})\nContent: {content}"
 
 
 # ── RAG chain ─────────────────────────────────────────────────────────────────
@@ -125,12 +144,12 @@ def get_rag_chain(project_id: int = None, k: int = 4, filenames: list[str] = Non
          "   - Do NOT answer the out-of-domain question from general knowledge. Do NOT provide extraneous facts about the unrelated subject.\n\n"
          "2. STRICT FACTUAL GROUNDING (TIER 2 - CLAIMS & DATA):\n"
          "   - Any factual assertions regarding what the authors investigated, discovered, measured, benchmarked, or claimed MUST be strictly supported by the text in {context}.\n"
-         "   - You MUST include inline citations in your text referencing the source documents, formatted strictly as [filename.pdf] or [filename.pdf, Page X].\n"
+         "   - You MUST include inline citations in your text referencing the exact source document and page number! Format them strictly as [filename.pdf, Page X] (e.g. [Attention_Is_All_You_Need.pdf, Page 4]). Do NOT omit the Page number.\n"
          "   - Never invent experimental numbers, baselines, or authors' conclusions that are not present in the context.\n\n"
          "3. ANCHORED PEDAGOGICAL DEEP-DIVES (TIER 3 - CONCEPT EXPLANATION & DERIVATION):\n"
          "   - If the user asks to explain, derive, clarify, or provide analogies for concepts, equations, methods, or algorithms that ARE mentioned or utilized in the uploaded documents (e.g., explaining how Softmax works, why scaling by sqrt(d_k) mitigates vanishing gradients, how backpropagation functions in this architecture, or mathematical notation):\n"
          "   - You are ENCOURAGED to use foundational scientific/academic knowledge to provide thorough, crystal-clear conceptual explanations, derivations, and intuitive analogies.\n"
-         "   - Explicitly anchor your explanation to the document by citing where the concept appears in [filename.pdf] and clarifying how the theoretical explanation connects to the paper's mechanism.\n\n"
+         "   - Explicitly anchor your explanation to the document by citing where the concept appears (e.g. [filename.pdf, Page X]) and clarifying how the theoretical explanation connects to the paper's mechanism.\n\n"
          "4. FORMATTING, LATEX & CITATIONS:\n"
          "   - When presenting mathematical formulas or equations, ALWAYS format them using proper LaTeX syntax enclosed in double dollar signs ($$...$$) for standalone block equations, or single dollar signs ($...$) for inline math. Never use raw square brackets without dollar delimiters.\n"
          "   - Do NOT use raw HTML tags like <br>. Use standard markdown for line breaks and formatting.\n"
@@ -139,7 +158,7 @@ def get_rag_chain(project_id: int = None, k: int = 4, filenames: list[str] = Non
         MessagesPlaceholder("chat_history"),
         ("human", "{input}"),
     ])
-    document_prompt = PromptTemplate.from_template("Source Document: {filename}\nContent: {page_content}")
+    document_prompt = SafeDocumentPrompt(input_variables=["page_content"], template="")
     qa_chain = create_stuff_documents_chain(llm, qa_prompt, document_prompt=document_prompt)
 
     return create_retrieval_chain(history_aware_retriever, qa_chain)
